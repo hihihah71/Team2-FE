@@ -1,7 +1,14 @@
 // Trang homepage cho phép chọn loại người dùng (sinh viên / nhà tuyển dụng)
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import TopNavbar from '../../components/layout/TopNavbar'
+import UserTypeCard from '../../components/home/UserTypeCard'
+import AuthModal from '../../components/auth/AuthModal'
+
+type AuthMode = 'login' | 'register' | null
 
 const HomePage = () => {
+  const [authMode, setAuthMode] = useState<AuthMode>(null)
+
   return (
     <div
       style={{
@@ -26,78 +33,10 @@ const HomePage = () => {
           gap: '24px',
         }}
       >
-        <nav
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '18px 0',
-            borderBottom: '1px solid rgba(31,41,55,1)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '999px',
-                background:
-                  'conic-gradient(from 180deg, #4f46e5, #22c55e, #0ea5e9, #4f46e5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                fontWeight: 700,
-                color: '#0b1120',
-              }}
-            >
-              CV
-            </div>
-            <div>
-              <span
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  letterSpacing: 0.2,
-                }}
-              >
-                CV Matching Platform
-              </span>
-              <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>
-                Student & Recruiter Portal
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link
-              to="/login"
-              style={{
-                padding: '6px 14px',
-                fontSize: '13px',
-                borderRadius: '999px',
-                border: '1px solid rgba(75,85,99,1)',
-                color: '#e5e7eb',
-              }}
-            >
-              Đăng nhập
-            </Link>
-            <Link
-              to="/register"
-              style={{
-                padding: '7px 16px',
-                fontSize: '13px',
-                borderRadius: '999px',
-                background:
-                  'linear-gradient(135deg, rgba(59,130,246,1), rgba(129,140,248,1))',
-                color: '#f9fafb',
-                fontWeight: 600,
-              }}
-            >
-              Đăng ký
-            </Link>
-          </div>
-        </nav>
+        <TopNavbar
+          onOpenLogin={() => setAuthMode('login')}
+          onOpenRegister={() => setAuthMode('register')}
+        />
 
         <header style={{ marginBottom: '8px' }}>
           <h1
@@ -123,113 +62,40 @@ const HomePage = () => {
             gap: '32px',
           }}
         >
-          <section
-            style={{
-              borderRadius: '12px',
-              padding: '20px',
-              background:
-                'radial-gradient(circle at top left, rgba(59,130,246,0.24), transparent), #020617',
-              border: '1px solid rgba(59,130,246,0.4)',
-            }}
-          >
-            <h2
-              style={{
-                fontSize: '18px',
-                fontWeight: 600,
-                marginBottom: '8px',
-              }}
-            >
-              Tôi là sinh viên
-            </h2>
-            <p style={{ color: '#9ca3af', marginBottom: '16px' }}>
-              Tạo hồ sơ cá nhân, upload nhiều phiên bản CV và nộp vào các vị trí
-              phù hợp.
-            </p>
-            <ul
-              style={{
-                marginBottom: '16px',
-                paddingLeft: '18px',
-                color: '#9ca3af',
-                fontSize: '14px',
-              }}
-            >
-              <li>Quản lý danh sách CV của bạn</li>
-              <li>Theo dõi trạng thái từng lượt ứng tuyển</li>
-              <li>Gợi ý công việc theo ngành học</li>
-            </ul>
-            <Link
-              to="/login?role=student"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '10px 18px',
-                borderRadius: '999px',
-                background:
-                  'linear-gradient(135deg, rgba(59,130,246,1), rgba(129,140,248,1))',
-                color: '#f9fafb',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Đăng nhập dành cho sinh viên
-            </Link>
-          </section>
+          <UserTypeCard
+            title="Tôi là sinh viên"
+            description="Tạo hồ sơ cá nhân, upload nhiều phiên bản CV và nộp vào các vị trí phù hợp."
+            bullets={[
+              'Quản lý danh sách CV của bạn',
+              'Theo dõi trạng thái từng lượt ứng tuyển',
+              'Gợi ý công việc theo ngành học',
+            ]}
+            buttonText="Đăng nhập dành cho sinh viên"
+            onButtonClick={() => setAuthMode('login')}
+            variant="student"
+          />
 
-          <section
-            style={{
-              borderRadius: '12px',
-              padding: '20px',
-              background:
-                'radial-gradient(circle at top right, rgba(16,185,129,0.24), transparent), #020617',
-              border: '1px solid rgba(34,197,94,0.4)',
-            }}
-          >
-            <h2
-              style={{
-                fontSize: '18px',
-                fontWeight: 600,
-                marginBottom: '8px',
-              }}
-            >
-              Tôi là nhà tuyển dụng
-            </h2>
-            <p style={{ color: '#9ca3af', marginBottom: '16px' }}>
-              Tạo tin tuyển dụng, xem nhanh các CV phù hợp và lọc ứng viên theo
-              tiêu chí của bạn.
-            </p>
-            <ul
-              style={{
-                marginBottom: '16px',
-                paddingLeft: '18px',
-                color: '#9ca3af',
-                fontSize: '14px',
-              }}
-            >
-              <li>Quản lý tin tuyển dụng theo từng vị trí</li>
-              <li>Xem danh sách CV đã apply theo job</li>
-              <li>Đánh dấu shortlist, từ chối, mời phỏng vấn</li>
-            </ul>
-            <Link
-              to="/login?role=recruiter"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '10px 18px',
-                borderRadius: '999px',
-                background:
-                  'linear-gradient(135deg, rgba(34,197,94,1), rgba(45,212,191,1))',
-                color: '#022c22',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}
-            >
-              Đăng nhập dành cho nhà tuyển dụng
-            </Link>
-          </section>
+          <UserTypeCard
+            title="Tôi là nhà tuyển dụng"
+            description="Tạo tin tuyển dụng, xem nhanh các CV phù hợp và lọc ứng viên theo tiêu chí của bạn."
+            bullets={[
+              'Quản lý tin tuyển dụng theo từng vị trí',
+              'Xem danh sách CV đã apply theo job',
+              'Đánh dấu shortlist, từ chối, mời phỏng vấn',
+            ]}
+            buttonText="Đăng nhập dành cho nhà tuyển dụng"
+            onButtonClick={() => setAuthMode('login')}
+            variant="recruiter"
+          />
         </div>
       </div>
+      {authMode && (
+        <AuthModal
+          mode={authMode === 'login' ? 'login' : 'register'}
+          onClose={() => setAuthMode(null)}
+          onSwitchMode={(mode) => setAuthMode(mode)}
+        />
+      )}
     </div>
   )
 }

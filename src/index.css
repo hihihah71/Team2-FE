@@ -34,6 +34,71 @@ body {
   width: 100%;
 }
 
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(14px);
+  z-index: 50;
+  opacity: 1;
+  transition: opacity 0.26s ease-out, backdrop-filter 0.26s ease-out;
+}
+
+.auth-overlay--closing {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
+.auth-modal-card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.26s ease-out, transform 0.26s ease-out;
+}
+
+.auth-modal-card--closing {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.auth-page {
+  animation: auth-page-fade-in 0.35s ease-out;
+}
+
+.auth-card {
+  animation: auth-card-fade-in 0.35s ease-out;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.auth-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 45px -18px rgba(15, 23, 42, 0.9);
+}
+
+@keyframes auth-page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auth-card-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

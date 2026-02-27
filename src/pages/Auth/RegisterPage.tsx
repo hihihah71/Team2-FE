@@ -1,12 +1,20 @@
 // Trang quản lý register
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { apiPost } from '../../services/httpClient'
+import AuthRoleToggle from '../../components/auth/AuthRoleToggle'
+import { API_ENDPOINTS } from '../../constants/api'
+import { ROUTES } from '../../constants/routes'
 
 type Role = 'student' | 'recruiter'
 
-const RegisterPage = () => {
+type RegisterPageProps = {
+  asModal?: boolean
+  onSwitchToLogin?: () => void
+}
+
+const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) => {
   const navigate = useNavigate()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,15 +33,15 @@ const RegisterPage = () => {
     try {
       setLoading(true)
 
-      await apiPost<unknown, { fullName: string; email: string; password: string; role: Role }>(
-        '/auth/register',
-        {
-          fullName,
-          email,
-          password,
-          role,
-        },
-      )
+      await apiPost<
+        unknown,
+        { fullName: string; email: string; password: string; role: Role }
+      >(API_ENDPOINTS.AUTH_REGISTER, {
+        fullName,
+        email,
+        password,
+        role,
+      })
 
       window.alert('Đăng ký thành công, vui lòng đăng nhập.')
       navigate(`/login?role=${role}`)
@@ -47,27 +55,55 @@ const RegisterPage = () => {
 
   return (
     <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'radial-gradient(circle at top, #0f172a, #020617)',
-        padding: '24px',
-      }}
+      className={asModal ? undefined : 'auth-page'}
+      style={
+        asModal
+          ? {}
+          : {
+              minHeight: '100vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'radial-gradient(circle at top, #0f172a, #020617)',
+              padding: '24px',
+            }
+      }
     >
       <div
+        className="auth-card"
         style={{
           width: '100%',
           maxWidth: '480px',
           backgroundColor: '#020617',
           borderRadius: '16px',
-          padding: '28px 32px',
+          padding: '24px 28px 28px 28px',
           border: '1px solid rgba(148,163,184,0.35)',
           boxShadow: '0 20px 45px -15px rgba(15,23,42,0.9)',
           color: '#e5e7eb',
         }}
       >
+        {!asModal && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px',
+            }}
+          >
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>CV Matching Platform</span>
+            <Link
+              to={ROUTES.HOME}
+              style={{
+                fontSize: '12px',
+                color: '#9ca3af',
+                textDecoration: 'underline',
+              }}
+            >
+              Về trang chính
+            </Link>
+          </div>
+        )}
         <h1
           style={{
             fontSize: '24px',
@@ -155,65 +191,46 @@ const RegisterPage = () => {
             />
           </div>
 
-          <div style={{ display: 'grid', gap: '6px' }}>
-            <span
-              style={{ fontSize: '14px', fontWeight: 500, color: '#d1d5db' }}
-            >
-              Bạn đăng ký với vai trò
-            </span>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-              }}
-            >
+          <AuthRoleToggle role={role} onChange={setRole} />
+
+          <p
+            style={{
+              marginTop: '4px',
+              fontSize: '13px',
+              color: '#9ca3af',
+            }}
+          >
+            Đã có tài khoản?{' '}
+            {asModal && onSwitchToLogin ? (
               <button
                 type="button"
-                onClick={() => setRole('student')}
+                onClick={onSwitchToLogin}
                 style={{
-                  padding: '8px 10px',
-                  borderRadius: '999px',
-                  border:
-                    role === 'student'
-                      ? '1px solid rgba(59,130,246,1)'
-                      : '1px solid rgba(55,65,81,1)',
-                  background:
-                    role === 'student'
-                      ? 'linear-gradient(135deg,#2563eb,#4f46e5)'
-                      : '#020617',
-                  color: role === 'student' ? '#f9fafb' : '#9ca3af',
-                  fontSize: '13px',
-                  fontWeight: 600,
+                  border: 'none',
+                  background: 'none',
+                  padding: 0,
+                  margin: 0,
+                  color: '#60a5fa',
+                  textDecoration: 'underline',
                   cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 500,
                 }}
               >
-                Sinh viên
+                Đăng nhập
               </button>
-              <button
-                type="button"
-                onClick={() => setRole('recruiter')}
+            ) : (
+              <Link
+                to={`/login?role=${role}`}
                 style={{
-                  padding: '8px 10px',
-                  borderRadius: '999px',
-                  border:
-                    role === 'recruiter'
-                      ? '1px solid rgba(34,197,94,1)'
-                      : '1px solid rgba(55,65,81,1)',
-                  background:
-                    role === 'recruiter'
-                      ? 'linear-gradient(135deg,#22c55e,#14b8a6)'
-                      : '#020617',
-                  color: role === 'recruiter' ? '#022c22' : '#9ca3af',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  color: '#60a5fa',
+                  textDecoration: 'underline',
                 }}
               >
-                Nhà tuyển dụng
-              </button>
-            </div>
-          </div>
+                Đăng nhập
+              </Link>
+            )}
+          </p>
 
           <button
             type="submit"

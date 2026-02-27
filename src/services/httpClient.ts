@@ -23,18 +23,58 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return (await response.json()) as T
 }
 
-export async function apiPost<TResponse, TBody = unknown>(
-  path: string,
-  body: TBody,
-): Promise<TResponse> {
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
+type RequestOptions = {
+  method?: HttpMethod
+  body?: unknown
+  useAuth?: boolean
+}
+
+async function request<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
+  const { method = 'GET', body, useAuth = true } = options
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  }
+
+  if (useAuth) {
+    const token = window.localStorage.getItem('access_token')
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+    method,
+    headers,
+    body: body != null ? JSON.stringify(body) : undefined,
   })
 
   return handleResponse<TResponse>(response)
+}
+
+export function apiGet<TResponse>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
+  return request<TResponse>(path, { ...(options ?? {}), method: 'GET' })
+}
+
+export function apiPost<TResponse, TBody = unknown>(
+  path: string,
+  body: TBody,
+  options?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  return request<TResponse>(path, { ...(options ?? {}), method: 'POST', body })
+}
+
+export function apiPut<TResponse, TBody = unknown>(
+  path: string,
+  body: TBody,
+  options?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  return request<TResponse>(path, { ...(options ?? {}), method: 'PUT', body })
+}
+
+export function apiDelete<TResponse>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
+  return request<TResponse>(path, { ...(options ?? {}), method: 'DELETE' })
 }
 
