@@ -35,13 +35,6 @@ const StudentDashboardPage = () => {
         </p>
       </header>
 
-      <p style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-        <Link to={ROUTES.STUDENT_JOBS} style={{ color: '#60a5fa' }}>Tìm việc</Link>
-        <Link to={ROUTES.STUDENT_MY_JOBS} style={{ color: '#60a5fa' }}>Đơn đã apply & đã lưu</Link>
-        <Link to={ROUTES.STUDENT_CV} style={{ color: '#60a5fa' }}>Quản lý CV</Link>
-        <Link to={ROUTES.STUDENT_PROFILE} style={{ color: '#60a5fa' }}>Thông tin cá nhân</Link>
-      </p>
-
       <section
         style={{
           display: 'grid',
