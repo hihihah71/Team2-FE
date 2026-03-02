@@ -1,9 +1,9 @@
-// Danh sách ứng viên đã apply vào một bài đăng — xem CV từng người
+// Xem chi tiết CV của ứng viên đã apply vào bài đăng
 import { useParams, Link } from 'react-router-dom'
-import { ROUTES } from '../../constants/routes'
 
-const RecruiterJobDetailPage = () => {
-  const { jobId } = useParams<{ jobId: string }>()
+const RecruiterApplicantCVPage = () => {
+  const { jobId, applicantId } = useParams<{ jobId: string; applicantId: string }>()
+  const backUrl = `/recruiter/jobs/${jobId}`
 
   return (
     <div
@@ -15,17 +15,17 @@ const RecruiterJobDetailPage = () => {
       }}
     >
       <Link
-        to={ROUTES.RECRUITER_JOBS}
+        to={backUrl}
         style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '16px', display: 'inline-block' }}
       >
-        ← Quay lại quản lý tin tuyển dụng
+        ← Quay lại danh sách ứng viên
       </Link>
       <header style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '6px' }}>
-          Ứng viên bài đăng #{jobId}
+          CV ứng viên #{applicantId}
         </h1>
         <p style={{ color: '#9ca3af', fontSize: '14px' }}>
-          Danh sách CV đã apply vào tin này. Xem chi tiết CV từng ứng viên, shortlist, mời phỏng vấn.
+          Bài đăng #{jobId} — Xem chi tiết CV, thông tin liên hệ, trạng thái shortlist / mời phỏng vấn.
         </p>
       </header>
       <section
@@ -33,14 +33,15 @@ const RecruiterJobDetailPage = () => {
           borderRadius: '12px',
           padding: '20px',
           border: '1px solid rgba(55,65,81,1)',
+          maxWidth: '720px',
         }}
       >
         <p style={{ color: '#9ca3af', fontSize: '14px' }}>
-          Bảng: Tên, email, trạng thái, nút "Xem CV" → trỏ tới trang chi tiết CV ứng viên.
+          Nội dung: PDF/view CV, tên, email, SĐT, học vấn, kinh nghiệm, kỹ năng. Nút: Shortlist, Từ chối, Mời phỏng vấn.
         </p>
       </section>
     </div>
   )
 }
 
-export default RecruiterJobDetailPage
+export default RecruiterApplicantCVPage

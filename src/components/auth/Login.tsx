@@ -1,52 +1,71 @@
-// Trang quản lý register
+// Trang quản lý login
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { apiPost } from '../../services/httpClient'
-import AuthRoleToggle from '../../components/auth/AuthRoleToggle'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
+import { useAuth } from '../../contexts/AuthContext'
+import AuthRoleToggle from '../../components/auth/AuthRoleToggle'
 
 type Role = 'student' | 'recruiter'
 
-type RegisterPageProps = {
+type LoginProps = {
   asModal?: boolean
-  onSwitchToLogin?: () => void
+  onSwitchToRegister?: () => void
 }
 
-const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) => {
+type LoginResponse = {
+  token: string
+  user: {
+    id: string
+    fullName: string
+    email: string
+    role: Role
+  }
+}
+
+const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
   const navigate = useNavigate()
-  const [fullName, setFullName] = useState('')
+  const { login } = useAuth()
+  const [searchParams] = useSearchParams()
+
+  const initialRole = (searchParams.get('role') as Role) || 'student'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<Role>('student')
+  const [role, setRole] = useState<Role>(initialRole)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
 
-    if (!fullName || !email || !password) {
-      window.alert('Vui lòng nhập đầy đủ họ tên, email và mật khẩu.')
+    if (!email || !password) {
+      window.alert('Vui lòng nhập đủ email và mật khẩu.')
       return
     }
 
     try {
       setLoading(true)
 
-      await apiPost<
-        unknown,
-        { fullName: string; email: string; password: string; role: Role }
-      >(API_ENDPOINTS.AUTH_REGISTER, {
-        fullName,
+      const data = await apiPost<
+        LoginResponse,
+        { email: string; password: string; role: Role }
+      >(API_ENDPOINTS.AUTH_LOGIN, {
         email,
         password,
         role,
       })
 
-      window.alert('Đăng ký thành công, vui lòng đăng nhập.')
-      navigate(`/login?role=${role}`)
+      login(data.token, data.user)
+
+      if (data.user.role === 'student') {
+        navigate(ROUTES.STUDENT_DASHBOARD)
+      } else {
+        navigate(ROUTES.RECRUITER_DASHBOARD)
+      }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Đăng ký thất bại.'
+      const message = error instanceof Error ? error.message : 'Đăng nhập thất bại.'
       window.alert(message)
     } finally {
       setLoading(false)
@@ -64,7 +83,7 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'radial-gradient(circle at top, #0f172a, #020617)',
+              background: 'radial-gradient(circle at top, #1f2937, #020617)',
               padding: '24px',
             }
       }
@@ -73,7 +92,7 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
         className="auth-card"
         style={{
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: '420px',
           backgroundColor: '#020617',
           borderRadius: '16px',
           padding: '24px 28px 28px 28px',
@@ -111,38 +130,13 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
             marginBottom: '4px',
           }}
         >
-          Đăng ký tài khoản
+          Đăng nhập
         </h1>
         <p style={{ color: '#9ca3af', marginBottom: '20px', fontSize: '14px' }}>
-          Tạo tài khoản sinh viên hoặc nhà tuyển dụng để bắt đầu sử dụng hệ
-          thống.
+          Truy cập nền tảng quản lý CV cho sinh viên và nhà tuyển dụng.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }}>
-          <div style={{ display: 'grid', gap: '6px' }}>
-            <label
-              htmlFor="fullName"
-              style={{ fontSize: '14px', fontWeight: 500, color: '#d1d5db' }}
-            >
-              Họ và tên
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              placeholder="Nguyễn Văn A"
-              style={{
-                padding: '9px 10px',
-                borderRadius: '8px',
-                border: '1px solid rgba(55,65,81,1)',
-                backgroundColor: '#020617',
-                color: '#e5e7eb',
-                fontSize: '14px',
-              }}
-            />
-          </div>
-
           <div style={{ display: 'grid', gap: '6px' }}>
             <label
               htmlFor="email"
@@ -200,11 +194,11 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
               color: '#9ca3af',
             }}
           >
-            Đã có tài khoản?{' '}
-            {asModal && onSwitchToLogin ? (
+            Chưa có tài khoản?{' '}
+            {asModal && onSwitchToRegister ? (
               <button
                 type="button"
-                onClick={onSwitchToLogin}
+                onClick={onSwitchToRegister}
                 style={{
                   border: 'none',
                   background: 'none',
@@ -217,17 +211,17 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
                   fontWeight: 500,
                 }}
               >
-                Đăng nhập
+                Đăng ký ngay
               </button>
             ) : (
               <Link
-                to={`/login?role=${role}`}
+                to="/register"
                 style={{
                   color: '#60a5fa',
                   textDecoration: 'underline',
                 }}
               >
-                Đăng nhập
+                Đăng ký ngay
               </Link>
             )}
           </p>
@@ -249,7 +243,7 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
               opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
       </div>
@@ -257,4 +251,6 @@ const RegisterPage = ({ asModal = false, onSwitchToLogin }: RegisterPageProps) =
   )
 }
 
-export default RegisterPage
+export default Login
+
+// Trang quản lý login

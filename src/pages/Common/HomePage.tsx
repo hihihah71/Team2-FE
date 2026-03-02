@@ -1,5 +1,8 @@
 // Trang homepage cho phép chọn loại người dùng (sinh viên / nhà tuyển dụng)
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+import { ROUTES } from '../../constants/routes'
 import TopNavbar from '../../components/layout/TopNavbar'
 import UserTypeCard from '../../components/home/UserTypeCard'
 import AuthModal from '../../components/auth/AuthModal'
@@ -7,7 +10,38 @@ import AuthModal from '../../components/auth/AuthModal'
 type AuthMode = 'login' | 'register' | null
 
 const HomePage = () => {
+  const navigate = useNavigate()
+  const { user, loading } = useAuth()
   const [authMode, setAuthMode] = useState<AuthMode>(null)
+
+  useEffect(() => {
+    if (loading) return
+    if (user) {
+      const to = user.role === 'student' ? ROUTES.STUDENT_DASHBOARD : ROUTES.RECRUITER_DASHBOARD
+      navigate(to, { replace: true })
+    }
+  }, [user, loading, navigate])
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#020617',
+          color: '#9ca3af',
+        }}
+      >
+        Đang tải...
+      </div>
+    )
+  }
+
+  if (user) {
+    return null
+  }
 
   return (
     <div

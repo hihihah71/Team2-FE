@@ -1,4 +1,7 @@
 // Màn hình tổng quan của người đi xin việc
+import { Link } from 'react-router-dom'
+import { ROUTES } from '../../constants/routes'
+
 const StudentDashboardPage = () => {
   // Dữ liệu mock tạm thời, sau có thể thay bằng API thật
   const stats = {
@@ -31,6 +34,13 @@ const StudentDashboardPage = () => {
           Đây là màn hình tổng quan CV và các đơn ứng tuyển của bạn.
         </p>
       </header>
+
+      <p style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <Link to={ROUTES.STUDENT_JOBS} style={{ color: '#60a5fa' }}>Tìm việc</Link>
+        <Link to={ROUTES.STUDENT_MY_JOBS} style={{ color: '#60a5fa' }}>Đơn đã apply & đã lưu</Link>
+        <Link to={ROUTES.STUDENT_CV} style={{ color: '#60a5fa' }}>Quản lý CV</Link>
+        <Link to={ROUTES.STUDENT_PROFILE} style={{ color: '#60a5fa' }}>Thông tin cá nhân</Link>
+      </p>
 
       <section
         style={{

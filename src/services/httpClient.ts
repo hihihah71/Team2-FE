@@ -74,6 +74,14 @@ export function apiPut<TResponse, TBody = unknown>(
   return request<TResponse>(path, { ...(options ?? {}), method: 'PUT', body })
 }
 
+export function apiPatch<TResponse, TBody = unknown>(
+  path: string,
+  body: TBody,
+  options?: Omit<RequestOptions, 'method' | 'body'>,
+) {
+  return request<TResponse>(path, { ...(options ?? {}), method: 'PATCH', body })
+}
+
 export function apiDelete<TResponse>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
   return request<TResponse>(path, { ...(options ?? {}), method: 'DELETE' })
 }

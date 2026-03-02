@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import LoginPage from '../../pages/Auth/LoginPage'
-import RegisterPage from '../../pages/Auth/RegisterPage'
+import Login from './Login'
+import Register from './Register'
 
 type AuthMode = 'login' | 'register'
 
@@ -32,9 +32,9 @@ const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
         style={{ maxWidth: '520px', width: '100%' }}
       >
         {mode === 'login' ? (
-          <LoginPage asModal onSwitchToRegister={() => onSwitchMode('register')} />
+          <Login asModal onSwitchToRegister={() => onSwitchMode('register')} />
         ) : (
-          <RegisterPage asModal onSwitchToLogin={() => onSwitchMode('login')} />
+          <Register asModal onSwitchToLogin={() => onSwitchMode('login')} />
         )}
       </div>
     </div>

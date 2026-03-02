@@ -1,0 +1,97 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react'
+import { apiGet } from '../services/httpClient'
+import { API_ENDPOINTS } from '../constants/api'
+
+const TOKEN_KEY = 'access_token'
+
+export type User = {
+  id: string
+  fullName: string
+  email: string
+  role: 'student' | 'recruiter'
+}
+
+type AuthContextValue = {
+  user: User | null
+  loading: boolean
+  isAuthenticated: boolean
+  login: (token: string, user: User) => void
+  logout: () => void
+  setUser: (user: User | null) => void
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUserState] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const setUser = useCallback((next: User | null) => {
+    setUserState(next)
+  }, [])
+
+  const login = useCallback((token: string, userData: User) => {
+    window.localStorage.setItem(TOKEN_KEY, token)
+    setUserState(userData)
+  }, [])
+
+  const logout = useCallback(() => {
+    window.localStorage.removeItem(TOKEN_KEY)
+    window.localStorage.removeItem('current_user')
+    setUserState(null)
+  }, [])
+
+  // Khôi phục phiên khi load/reload: có token thì gọi /auth/me để validate và lấy user
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      setLoading(false)
+      return
+    }
+    apiGet<{ id: string; fullName: string; email: string; role: 'student' | 'recruiter' }>(
+      API_ENDPOINTS.AUTH_ME,
+    )
+      .then((data) => {
+        setUserState({
+          id: data.id,
+          fullName: data.fullName,
+          email: data.email,
+          role: data.role,
+        })
+      })
+      .catch(() => {
+        window.localStorage.removeItem(TOKEN_KEY)
+        window.localStorage.removeItem('current_user')
+        setUserState(null)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  const value: AuthContextValue = {
+    user,
+    loading,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    setUser: setUserState,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext)
+  if (!ctx) {
+    throw new Error('useAuth must be used within AuthProvider')
+  }
+  return ctx
+}

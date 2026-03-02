@@ -52,7 +52,7 @@ const TopNavbar = ({ onOpenLogin, onOpenRegister }: TopNavbarProps) => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {onOpenLogin ? (
+        {onOpenLogin && (
           <button
             type="button"
             onClick={onOpenLogin}
@@ -67,21 +67,8 @@ const TopNavbar = ({ onOpenLogin, onOpenRegister }: TopNavbarProps) => {
           >
             Đăng nhập
           </button>
-        ) : (
-          <Link
-            to={ROUTES.LOGIN}
-            style={{
-              padding: '6px 14px',
-              fontSize: '13px',
-              borderRadius: '999px',
-              border: '1px solid rgba(75,85,99,1)',
-              color: '#e5e7eb',
-            }}
-          >
-            Đăng nhập
-          </Link>
         )}
-        {onOpenRegister ? (
+        {onOpenRegister && (
           <button
             type="button"
             onClick={onOpenRegister}
@@ -98,21 +85,6 @@ const TopNavbar = ({ onOpenLogin, onOpenRegister }: TopNavbarProps) => {
           >
             Đăng ký
           </button>
-        ) : (
-          <Link
-            to={ROUTES.REGISTER}
-            style={{
-              padding: '7px 16px',
-              fontSize: '13px',
-              borderRadius: '999px',
-              background:
-                'linear-gradient(135deg, rgba(59,130,246,1), rgba(129,140,248,1))',
-              color: '#f9fafb',
-              fontWeight: 600,
-            }}
-          >
-            Đăng ký
-          </Link>
         )}
       </div>
     </nav>
