@@ -1,8 +1,57 @@
 // Trang chính tìm việc — Người xin việc
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
+import { apiGet } from '../../services/httpClient'
+import { API_ENDPOINTS } from '../../constants/api'
+import type { Job } from '../../types/job'
+import StudentJobFilters from '../../components/jobs/StudentJobFilters'
+import StudentJobList from '../../components/jobs/StudentJobList'
+import StudentJobCreateForm from '../../components/jobs/StudentJobCreateForm'
 
 const StudentJobsPage = () => {
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    setLoading(true)
+    apiGet<Job[]>(API_ENDPOINTS.JOBS_LIST)
+      .then((data) => {
+        if (!cancelled) {
+          setJobs(Array.isArray(data) ? data : [])
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        const message = err instanceof Error ? err.message : 'Không thể tải danh sách công việc.'
+        setError(message)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const filteredJobs = jobs.filter((job) => {
+    const keyword = search.trim().toLowerCase()
+    if (!keyword) return true
+    const text = `${job.title ?? ''} ${job.companyName ?? ''} ${job.location ?? ''}`.toLowerCase()
+    return text.includes(keyword)
+  })
+
+  const handleJobCreated = (job: Job) => {
+    setJobs((prev) => [job, ...prev])
+  }
+
   return (
     <div
       style={{
@@ -27,9 +76,24 @@ const StudentJobsPage = () => {
           border: '1px solid rgba(55,65,81,1)',
         }}
       >
-        <p style={{ color: '#9ca3af', fontSize: '14px' }}>
-          Danh sách / grid bài đăng, ô tìm kiếm, bộ lọc. Mỗi thẻ link tới <code>/student/jobs/:jobId</code>.
-        </p>
+        <StudentJobFilters
+          search={search}
+          onSearchChange={setSearch}
+          loading={loading}
+          total={filteredJobs.length}
+        />
+
+        {error && (
+          <p style={{ color: '#fca5a5', fontSize: '13px', marginBottom: '12px' }}>{error}</p>
+        )}
+
+        <StudentJobList
+          jobs={filteredJobs}
+          loading={loading}
+          hasFilter={search.trim().length > 0}
+        />
+
+        <StudentJobCreateForm onCreated={handleJobCreated} />
       </section>
       <p style={{ marginTop: '16px' }}>
         <Link to={ROUTES.STUDENT_MY_JOBS} style={{ color: '#60a5fa' }}>
