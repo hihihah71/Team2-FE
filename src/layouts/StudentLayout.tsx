@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '../constants/routes'
 import { useAuth } from '../contexts/AuthContext'
+import { Footer } from '../components/common/Footer'
 
 const navItems = [
   { to: ROUTES.STUDENT_DASHBOARD, label: 'Tổng quan' },
@@ -88,6 +89,7 @@ const StudentLayout = () => {
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
+      <Footer />
     </div>
   )
 }
