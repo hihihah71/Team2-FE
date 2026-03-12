@@ -4,85 +4,68 @@ type ApiErrorShape = {
   message?: string
 }
 
+function getToken() {
+  return localStorage.getItem("access_token")
+}
+
+function getHeaders() {
+  const token = getToken()
+
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  }
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    let message = 'Đã xảy ra lỗi khi gọi API.'
+    let message = "API error"
 
     try {
-      const data = (await response.json()) as ApiErrorShape
-      if (data?.message) {
-        message = data.message
-      }
-    } catch {
-      // ignore JSON parse error
-    }
+      const data: ApiErrorShape = await response.json()
+      if (data.message) message = data.message
+    } catch {}
 
     throw new Error(message)
   }
 
-  return (await response.json()) as T
+  return response.json()
 }
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-
-type RequestOptions = {
-  method?: HttpMethod
-  body?: unknown
-  useAuth?: boolean
-}
-
-async function request<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
-  const { method = 'GET', body, useAuth = true } = options
-
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  }
-
-  if (useAuth) {
-    const token = window.localStorage.getItem('access_token')
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-  }
-
+async function request<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body != null ? JSON.stringify(body) : undefined,
+    headers: getHeaders(),
+    ...options
   })
 
-  return handleResponse<TResponse>(response)
+  return handleResponse<T>(response)
 }
 
-export function apiGet<TResponse>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
-  return request<TResponse>(path, { ...(options ?? {}), method: 'GET' })
+export function apiGet<T>(path: string) {
+  return request<T>(path)
 }
 
-export function apiPost<TResponse, TBody = unknown>(
-  path: string,
-  body: TBody,
-  options?: Omit<RequestOptions, 'method' | 'body'>,
-) {
-  return request<TResponse>(path, { ...(options ?? {}), method: 'POST', body })
+export function apiPost<T>(path: string, body: any) {
+  return request<T>(path, {
+    method: "POST",
+    body: JSON.stringify(body)
+  })
 }
 
-export function apiPut<TResponse, TBody = unknown>(
-  path: string,
-  body: TBody,
-  options?: Omit<RequestOptions, 'method' | 'body'>,
-) {
-  return request<TResponse>(path, { ...(options ?? {}), method: 'PUT', body })
+export function apiPut<T>(path: string, body: any) {
+  return request<T>(path, {
+    method: "PUT",
+    body: JSON.stringify(body)
+  })
 }
 
-export function apiPatch<TResponse, TBody = unknown>(
-  path: string,
-  body: TBody,
-  options?: Omit<RequestOptions, 'method' | 'body'>,
-) {
-  return request<TResponse>(path, { ...(options ?? {}), method: 'PATCH', body })
-}
-
-export function apiDelete<TResponse>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) {
-  return request<TResponse>(path, { ...(options ?? {}), method: 'DELETE' })
+export function apiDelete<T>(path: string) {
+  return request<T>(path, {
+    method: "DELETE"
+  })
 }
 

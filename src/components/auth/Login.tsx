@@ -6,7 +6,6 @@ import { apiPost } from '../../services/httpClient'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
 import { useAuth } from '../../contexts/AuthContext'
-import AuthRoleToggle from '../../components/auth/AuthRoleToggle'
 
 type Role = 'student' | 'recruiter'
 
@@ -34,7 +33,7 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<Role>(initialRole)
+  const [role] = useState<Role>(initialRole)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
@@ -48,14 +47,14 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
     try {
       setLoading(true)
 
-      const data = await apiPost<
-        LoginResponse,
-        { email: string; password: string; role: Role }
-      >(API_ENDPOINTS.AUTH_LOGIN, {
-        email,
-        password,
-        role,
-      })
+      const data = await apiPost<LoginResponse>(
+        API_ENDPOINTS.AUTH_LOGIN,
+        {
+          email,
+          password,
+          role,
+        }
+      )
 
       login(data.token, data.user)
 
@@ -65,7 +64,8 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
         navigate(ROUTES.RECRUITER_DASHBOARD)
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Đăng nhập thất bại.'
+      const message =
+        error instanceof Error ? error.message : 'Đăng nhập thất bại.'
       window.alert(message)
     } finally {
       setLoading(false)
@@ -110,7 +110,10 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
               marginBottom: '12px',
             }}
           >
-            <span style={{ fontSize: '12px', color: '#9ca3af' }}>CV Matching Platform</span>
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+              CV Matching Platform
+            </span>
+
             <Link
               to={ROUTES.HOME}
               style={{
@@ -123,6 +126,7 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
             </Link>
           </div>
         )}
+
         <h1
           style={{
             fontSize: '24px',
@@ -132,6 +136,7 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
         >
           Đăng nhập
         </h1>
+
         <p style={{ color: '#9ca3af', marginBottom: '20px', fontSize: '14px' }}>
           Truy cập nền tảng quản lý CV cho sinh viên và nhà tuyển dụng.
         </p>
@@ -144,6 +149,7 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
             >
               Email
             </label>
+
             <input
               id="email"
               type="email"
@@ -168,6 +174,7 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
             >
               Mật khẩu
             </label>
+
             <input
               id="password"
               type="password"
@@ -184,8 +191,6 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
               }}
             />
           </div>
-
-          <AuthRoleToggle role={role} onChange={setRole} />
 
           <p
             style={{
@@ -252,5 +257,3 @@ const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
 }
 
 export default Login
-
-// Trang quản lý login

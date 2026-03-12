@@ -5,14 +5,15 @@ import Register from './Register'
 type AuthMode = 'login' | 'register'
 
 type AuthModalProps = {
-  mode: AuthMode
+  mode: 'login' | 'register'
+  role: 'student' | 'recruiter'
   onClose: () => void
-  onSwitchMode: (mode: AuthMode) => void
+  onSwitchMode: (mode: 'login' | 'register') => void
 }
 
 const CLOSE_ANIMATION_MS = 260
 
-const AuthModal = ({ mode, onClose, onSwitchMode }: AuthModalProps) => {
+const AuthModal = ({ mode,role, onClose, onSwitchMode }: AuthModalProps) => {
   const [isClosing, setIsClosing] = useState(false)
 
   const handleRequestClose = () => {

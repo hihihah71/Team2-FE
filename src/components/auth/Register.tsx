@@ -3,7 +3,6 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiPost } from '../../services/httpClient'
-import AuthRoleToggle from '../../components/auth/AuthRoleToggle'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
 
@@ -14,12 +13,20 @@ type RegisterProps = {
   onSwitchToLogin?: () => void
 }
 
+type RegisterResponse = {
+  id: string
+  fullName: string
+  email: string
+  role: Role
+}
+
 const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
   const navigate = useNavigate()
+
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<Role>('student')
+  const [role] = useState<Role>('student')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
@@ -33,10 +40,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
     try {
       setLoading(true)
 
-      await apiPost<
-        unknown,
-        { fullName: string; email: string; password: string; role: Role }
-      >(API_ENDPOINTS.AUTH_REGISTER, {
+      await apiPost<RegisterResponse>(API_ENDPOINTS.AUTH_REGISTER, {
         fullName,
         email,
         password,
@@ -46,7 +50,8 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
       window.alert('Đăng ký thành công, vui lòng đăng nhập.')
       navigate(`/login?role=${role}`)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Đăng ký thất bại.'
+      const message =
+        error instanceof Error ? error.message : 'Đăng ký thất bại.'
       window.alert(message)
     } finally {
       setLoading(false)
@@ -91,7 +96,10 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
               marginBottom: '12px',
             }}
           >
-            <span style={{ fontSize: '12px', color: '#9ca3af' }}>CV Matching Platform</span>
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+              CV Matching Platform
+            </span>
+
             <Link
               to={ROUTES.HOME}
               style={{
@@ -104,6 +112,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
             </Link>
           </div>
         )}
+
         <h1
           style={{
             fontSize: '24px',
@@ -113,6 +122,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
         >
           Đăng ký tài khoản
         </h1>
+
         <p style={{ color: '#9ca3af', marginBottom: '20px', fontSize: '14px' }}>
           Tạo tài khoản sinh viên hoặc nhà tuyển dụng để bắt đầu sử dụng hệ
           thống.
@@ -126,6 +136,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
             >
               Họ và tên
             </label>
+
             <input
               id="fullName"
               type="text"
@@ -150,6 +161,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
             >
               Email
             </label>
+
             <input
               id="email"
               type="email"
@@ -174,6 +186,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
             >
               Mật khẩu
             </label>
+
             <input
               id="password"
               type="password"
@@ -190,8 +203,6 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
               }}
             />
           </div>
-
-          <AuthRoleToggle role={role} onChange={setRole} />
 
           <p
             style={{
