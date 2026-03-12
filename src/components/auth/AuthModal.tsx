@@ -33,10 +33,17 @@ const AuthModal = ({ mode,role, onClose, onSwitchMode }: AuthModalProps) => {
         style={{ maxWidth: '520px', width: '100%' }}
       >
         {mode === 'login' ? (
-          <Login asModal onSwitchToRegister={() => onSwitchMode('register')} />
-        ) : (
-          <Register asModal onSwitchToLogin={() => onSwitchMode('login')} />
-        )}
+  <Login
+    asModal
+    role={role}
+    onSwitchToRegister={() => onSwitchMode('register')}
+  />
+) : (
+  <Register
+    asModal
+    onSwitchToLogin={() => onSwitchMode('login')}
+  />
+)}
       </div>
     </div>
   )

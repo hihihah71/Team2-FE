@@ -11,6 +11,7 @@ type Role = 'student' | 'recruiter'
 
 type LoginProps = {
   asModal?: boolean
+  role?: Role
   onSwitchToRegister?: () => void
 }
 
@@ -24,12 +25,21 @@ type LoginResponse = {
   }
 }
 
-const Login = ({ asModal = false, onSwitchToRegister }: LoginProps) => {
+const Login = ({
+  asModal = false,
+  role: propRole,
+  onSwitchToRegister,
+}: LoginProps) => {
   const navigate = useNavigate()
   const { login } = useAuth()
   const [searchParams] = useSearchParams()
 
-  const initialRole = (searchParams.get('role') as Role) || 'student'
+  // role priority:
+  // 1. role passed from modal
+  // 2. role from URL (?role=student)
+  // 3. fallback = student
+  const initialRole: Role =
+    propRole ?? (searchParams.get('role') as Role) ?? 'student'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
