@@ -1,9 +1,51 @@
-// Chi tiết thống kê từng bài đăng của nhà tuyển dụng
 import { useParams, Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
+import { useEffect, useState } from 'react'
+
+interface StatsData {
+  views: number;
+  applications: number;
+  shortlisted: number;
+  interviews: number;
+}
 
 const RecruiterJobStatsPage = () => {
   const { jobId } = useParams<{ jobId: string }>()
+  const [stats, setStats] = useState<StatsData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        // Update the URL below to match your backend API address
+        const response = await fetch(`http://localhost:5000/api/jobs/${jobId}/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error("Error fetching job stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (jobId) fetchStats();
+  }, [jobId]);
+
+  const statConfig = [
+    { label: 'Lượt xem', value: stats?.views ?? 0 },
+    { label: 'Số CV đã nộp', value: stats?.applications ?? 0 },
+    { label: 'Đã shortlist', value: stats?.shortlisted ?? 0 },
+    { label: 'Đã mời phỏng vấn', value: stats?.interviews ?? 0 },
+  ];
 
   return (
     <div
@@ -36,17 +78,20 @@ const RecruiterJobStatsPage = () => {
           marginBottom: '24px',
         }}
       >
-        {['Lượt xem', 'Số CV đã nộp', 'Đã shortlist', 'Đã mời phỏng vấn'].map((label) => (
+        {statConfig.map((item) => (
           <div
-            key={label}
+            key={item.label}
             style={{
               borderRadius: '12px',
               padding: '16px',
               border: '1px solid rgba(55,65,81,1)',
+              backgroundColor: '#0f172a'
             }}
           >
-            <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '4px' }}>{label}</p>
-            <p style={{ fontSize: '22px', fontWeight: 700 }}>—</p>
+            <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '4px' }}>{item.label}</p>
+            <p style={{ fontSize: '22px', fontWeight: 700 }}>
+              {loading ? '...' : item.value.toLocaleString()}
+            </p>
           </div>
         ))}
       </section>
