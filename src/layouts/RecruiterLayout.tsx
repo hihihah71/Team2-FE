@@ -1,6 +1,9 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { ROUTES } from '../constants/routes'
 import { useAuth } from '../contexts/AuthContext'
+import { Footer } from '../components/common/Footer'
+import { NotificationNavLink } from '../components/common/NotificationNavLink'
+import { useScrollToTopOnDrillDown } from '../hooks/useScrollToTopOnDrillDown'
 
 const navItems = [
   { to: ROUTES.RECRUITER_DASHBOARD, label: 'Tổng quan' },
@@ -12,6 +15,7 @@ const RecruiterLayout = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  useScrollToTopOnDrillDown()
 
   return (
     <div
@@ -61,6 +65,11 @@ const RecruiterLayout = () => {
             {label}
           </Link>
         ))}
+        <NotificationNavLink
+          to={ROUTES.RECRUITER_NOTIFICATIONS}
+          active={location.pathname.startsWith(ROUTES.RECRUITER_NOTIFICATIONS)}
+          activeBackground="rgba(34,197,94,0.2)"
+        />
         {user && (
           <button
             type="button"
@@ -86,6 +95,7 @@ const RecruiterLayout = () => {
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
+      <Footer />
     </div>
   )
 }

@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext'
 // Common
 const HomePage = lazy(() => import('../pages/Common/HomePage'))
 const ProfilePage = lazy(() => import('../pages/Common/ProfilePage'))
+const NotificationsPage = lazy(() => import('../pages/Common/NotificationsPage'))
 
 // Student
 const StudentDashboardPage = lazy(() => import('../pages/Student/StudentDashboardPage'))
@@ -80,6 +81,7 @@ export function AppRoutes() {
           <Route path="jobs/:jobId" element={<StudentJobDetailPage />} />
           <Route path="my-jobs" element={<StudentMyJobsPage />} />
           <Route path="cv" element={<StudentCVPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
@@ -100,6 +102,7 @@ export function AppRoutes() {
           <Route path="jobs/:jobId/stats" element={<RecruiterJobStatsPage />} />
           <Route path="jobs/:jobId/applicants/:applicantId" element={<RecruiterApplicantCVPage />} />
           <Route path="jobs/:jobId" element={<RecruiterJobDetailPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 

@@ -11,6 +11,7 @@ export const ROUTES = {
   STUDENT_JOB_DETAIL: '/student/jobs/:jobId',
   STUDENT_MY_JOBS: '/student/my-jobs', // đã apply / đã lưu
   STUDENT_CV: '/student/cv',
+  STUDENT_NOTIFICATIONS: '/student/notifications',
   STUDENT_PROFILE: '/student/profile',
 
   // Recruiter (nhà tuyển dụng)
@@ -21,6 +22,7 @@ export const ROUTES = {
   RECRUITER_JOB_EDIT: '/recruiter/jobs/:jobId/edit',
   RECRUITER_JOB_STATS: '/recruiter/jobs/:jobId/stats',
   RECRUITER_APPLICANT_CV: '/recruiter/jobs/:jobId/applicants/:applicantId',
+  RECRUITER_NOTIFICATIONS: '/recruiter/notifications',
   RECRUITER_PROFILE: '/recruiter/profile',
 } as const
 

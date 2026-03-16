@@ -1,105 +1,131 @@
 // Trang chính tìm việc — Người xin việc
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
-import { apiGet } from '../../services/httpClient'
-import { API_ENDPOINTS } from '../../constants/api'
-import type { Job } from '../../types/job'
-import StudentJobFilters from '../../components/jobs/StudentJobFilters'
-import StudentJobList from '../../components/jobs/StudentJobList'
-import StudentJobCreateForm from '../../components/jobs/StudentJobCreateForm'
+import { JobCard } from '../../components/job/JobCard'
+import { Pagination } from '../../components/common/Pagination'
+import { PageHeader } from '../../components/common/PageHeader'
+import { useJobs } from '../../features/jobs/useJobs'
+import '../PageUI.css'
 
 const StudentJobsPage = () => {
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [locationFilter, setLocationFilter] = useState('')
+  const [salaryFilter, setSalaryFilter] = useState<'all' | 'under15' | '15to30' | 'over30'>('all')
+  const [sortBy, setSortBy] = useState<'newest' | 'salary'>('newest')
+  const [page, setPage] = useState(1)
+  const pageSize = 6
+  const { jobs, loading, error } = useJobs({ search, page: 1, limit: 120 })
 
-  useEffect(() => {
-    let cancelled = false
-
-    setLoading(true)
-    apiGet<Job[]>(API_ENDPOINTS.JOBS_LIST)
-      .then((data) => {
-        if (!cancelled) {
-          setJobs(Array.isArray(data) ? data : [])
-        }
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return
-        const message = err instanceof Error ? err.message : 'Không thể tải danh sách công việc.'
-        setError(message)
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      })
-
-    return () => {
-      cancelled = true
+  const filteredJobs = useMemo(() => {
+    let items = [...jobs]
+    if (locationFilter.trim()) {
+      const keyword = locationFilter.trim().toLowerCase()
+      items = items.filter((job) => (job.location || '').toLowerCase().includes(keyword))
     }
-  }, [])
+    if (salaryFilter !== 'all') {
+      items = items.filter((job) => {
+        const min = job.salaryMin || 0
+        if (salaryFilter === 'under15') return min < 15000000
+        if (salaryFilter === '15to30') return min >= 15000000 && min <= 30000000
+        return min > 30000000
+      })
+    }
+    items.sort((a, b) => {
+      if (sortBy === 'salary') return (b.salaryMin || 0) - (a.salaryMin || 0)
+      return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
+    })
+    return items
+  }, [jobs, locationFilter, salaryFilter, sortBy])
 
-  const filteredJobs = jobs.filter((job) => {
-    const keyword = search.trim().toLowerCase()
-    if (!keyword) return true
-    const text = `${job.title ?? ''} ${job.companyName ?? ''} ${job.location ?? ''}`.toLowerCase()
-    return text.includes(keyword)
-  })
+  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const pagedJobs = filteredJobs.slice((safePage - 1) * pageSize, safePage * pageSize)
 
-  const handleJobCreated = (job: Job) => {
-    setJobs((prev) => [job, ...prev])
+  const onChangeSearch = (value: string) => {
+    setSearch(value)
+    setPage(1)
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#020617',
-        color: '#e5e7eb',
-        padding: '24px',
-      }}
-    >
-      <header style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '6px' }}>
-          Tìm việc
-        </h1>
-        <p style={{ color: '#9ca3af', fontSize: '14px' }}>
-          Duyệt tin tuyển dụng, lọc theo vị trí, kinh nghiệm, công ty. Click vào bài đăng để xem chi tiết và nộp CV.
+    <div className="page-ui">
+      <div className="page-ui__container">
+        <PageHeader
+          title="Tìm việc"
+          subtitle="Bộ lọc nâng cao theo vị trí, mức lương, sắp xếp theo độ mới và lương."
+        />
+
+        <section className="page-ui__card">
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '12px',
+              marginBottom: '16px',
+            }}
+          >
+            <input
+              className="page-ui__input"
+              placeholder="Tìm theo tiêu đề hoặc công ty"
+              value={search}
+              onChange={(e) => onChangeSearch(e.target.value)}
+            />
+            <input
+              className="page-ui__input"
+              placeholder="Lọc theo địa điểm"
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+            />
+            <select
+              className="page-ui__input"
+              value={salaryFilter}
+              onChange={(e) => setSalaryFilter(e.target.value as typeof salaryFilter)}
+            >
+              <option value="all">Mức lương bất kỳ</option>
+              <option value="under15">Dưới 15 triệu</option>
+              <option value="15to30">15 - 30 triệu</option>
+              <option value="over30">Trên 30 triệu</option>
+            </select>
+            <select
+              className="page-ui__input"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="salary">Lương cao trước</option>
+            </select>
+          </div>
+
+          <p className="page-ui__muted" style={{ marginTop: 0 }}>
+            Tìm thấy {filteredJobs.length} công việc phù hợp
+          </p>
+
+          {error && <p className="page-ui__error">{error}</p>}
+          {loading ? (
+            <p className="page-ui__muted">Đang tải danh sách việc làm...</p>
+          ) : pagedJobs.length === 0 ? (
+            <p className="page-ui__muted">Không có công việc phù hợp với bộ lọc hiện tại.</p>
+          ) : (
+            <div className="page-ui__grid page-ui__grid--two-cols">
+              {pagedJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  detailPath={ROUTES.STUDENT_JOB_DETAIL.replace(':jobId', job._id)}
+                />
+              ))}
+            </div>
+          )}
+
+          <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+        </section>
+
+        <p style={{ marginTop: '16px' }}>
+          <Link to={ROUTES.STUDENT_MY_JOBS} style={{ color: '#60a5fa' }}>
+            Xem đơn đã apply & đã lưu →
+          </Link>
         </p>
-      </header>
-      <section
-        style={{
-          borderRadius: '12px',
-          padding: '20px',
-          border: '1px solid rgba(55,65,81,1)',
-        }}
-      >
-        <StudentJobFilters
-          search={search}
-          onSearchChange={setSearch}
-          loading={loading}
-          total={filteredJobs.length}
-        />
-
-        {error && (
-          <p style={{ color: '#fca5a5', fontSize: '13px', marginBottom: '12px' }}>{error}</p>
-        )}
-
-        <StudentJobList
-          jobs={filteredJobs}
-          loading={loading}
-          hasFilter={search.trim().length > 0}
-        />
-
-        <StudentJobCreateForm onCreated={handleJobCreated} />
-      </section>
-      <p style={{ marginTop: '16px' }}>
-        <Link to={ROUTES.STUDENT_MY_JOBS} style={{ color: '#60a5fa' }}>
-          Xem đơn đã apply & đã lưu →
-        </Link>
-      </p>
+      </div>
     </div>
   )
 }

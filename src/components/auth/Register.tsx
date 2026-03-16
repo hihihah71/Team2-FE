@@ -26,7 +26,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role] = useState<Role>('student')
+  const [role, setRole] = useState<Role>('student')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
@@ -127,6 +127,56 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
           Tạo tài khoản sinh viên hoặc nhà tuyển dụng để bắt đầu sử dụng hệ
           thống.
         </p>
+
+        {/* Role toggle */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            marginBottom: '16px',
+            backgroundColor: '#020617',
+            padding: '4px',
+            borderRadius: '999px',
+            border: '1px solid rgba(55,65,81,1)',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setRole('student')}
+            style={{
+              flex: 1,
+              padding: '6px 10px',
+              borderRadius: '999px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: role === 'student' ? '#1d4ed8' : 'transparent',
+              color: role === 'student' ? '#f9fafb' : '#9ca3af',
+              transition: 'background-color 0.15s ease, color 0.15s ease',
+            }}
+          >
+            Tôi là sinh viên
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole('recruiter')}
+            style={{
+              flex: 1,
+              padding: '6px 10px',
+              borderRadius: '999px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              backgroundColor: role === 'recruiter' ? '#1d4ed8' : 'transparent',
+              color: role === 'recruiter' ? '#f9fafb' : '#9ca3af',
+              transition: 'background-color 0.15s ease, color 0.15s ease',
+            }}
+          >
+            Tôi là nhà tuyển dụng
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }}>
           <div style={{ display: 'grid', gap: '6px' }}>

@@ -1,0 +1,44 @@
+.recruiter-jobs-page {
+  min-height: 100vh;
+  background-color: #020617;
+  color: #e5e7eb;
+  padding: 24px;
+}
+
+.recruiter-jobs-shell {
+  /* max-width: 1100px; */
+  margin: 0 120px;
+}
+
+.recruiter-jobs-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.recruiter-jobs-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.recruiter-jobs-subtitle {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.recruiter-jobs-new-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  font-weight: 600;
+}
+
+.recruiter-jobs-back-link {
+  margin-top: 16px;
+  color: #60a5fa;
+}
+

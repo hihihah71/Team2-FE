@@ -9,14 +9,16 @@ type StudentJobListProps = {
 }
 
 const formatSalary = (job: Job) => {
-  if (job.salaryFrom == null && job.salaryTo == null) return 'Thỏa thuận'
-  if (job.salaryFrom != null && job.salaryTo != null) {
-    return `${job.salaryFrom.toLocaleString('vi-VN')} - ${job.salaryTo.toLocaleString('vi-VN')} VND`
+  const salaryFrom = job.salaryFrom ?? job.salaryMin
+  const salaryTo = job.salaryTo ?? job.salaryMax
+  if (salaryFrom == null && salaryTo == null) return 'Thỏa thuận'
+  if (salaryFrom != null && salaryTo != null) {
+    return `${salaryFrom.toLocaleString('vi-VN')} - ${salaryTo.toLocaleString('vi-VN')} VND`
   }
-  if (job.salaryFrom != null) {
-    return `Từ ${job.salaryFrom.toLocaleString('vi-VN')} VND`
+  if (salaryFrom != null) {
+    return `Từ ${salaryFrom.toLocaleString('vi-VN')} VND`
   }
-  return `Đến ${job.salaryTo!.toLocaleString('vi-VN')} VND`
+  return `Đến ${salaryTo!.toLocaleString('vi-VN')} VND`
 }
 
 const StudentJobList = ({ jobs, loading, hasFilter }: StudentJobListProps) => {
@@ -43,8 +45,8 @@ const StudentJobList = ({ jobs, loading, hasFilter }: StudentJobListProps) => {
     >
       {jobs.map((job) => (
         <Link
-          key={job.id}
-          to={ROUTES.STUDENT_JOB_DETAIL.replace(':jobId', String(job.id))}
+          key={job._id || job.id}
+          to={ROUTES.STUDENT_JOB_DETAIL.replace(':jobId', String(job._id || job.id))}
           style={{
             textDecoration: 'none',
             borderRadius: '12px',
@@ -68,7 +70,7 @@ const StudentJobList = ({ jobs, loading, hasFilter }: StudentJobListProps) => {
             {job.title || 'Vị trí chưa có tên'}
           </h3>
           <p style={{ fontSize: '13px', color: '#9ca3af' }}>
-            {job.companyName || 'Công ty chưa cập nhật'}
+            {job.company || job.companyName || 'Công ty chưa cập nhật'}
           </p>
           <p style={{ fontSize: '13px', color: '#9ca3af' }}>
             {job.location || 'Địa điểm linh hoạt'}

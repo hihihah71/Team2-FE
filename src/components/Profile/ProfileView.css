@@ -4,7 +4,6 @@
 
 .pv-container {
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: #f8fafc;
@@ -44,7 +43,7 @@
     z-index: 2;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .pv-main-content {
         grid-template-columns: 1fr;
         padding: 0 24px 40px;
@@ -381,7 +380,7 @@
     padding-top: 140px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .pv-content-area {
         padding-top: 0;
     }

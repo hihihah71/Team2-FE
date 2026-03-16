@@ -1,47 +1,68 @@
 // Dashboard của nhà tuyển dụng
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
+import { getRecruiterDashboardStats } from '../../features/dashboard/dashboardService'
+import type { RecruiterDashboardStats } from '../../types/domain'
+import { PageHeader } from '../../components/common/PageHeader'
+import { StatsCard } from '../../components/dashboard/StatsCard'
+import './RecruiterDashboardPage.css'
+import '../PageUI.css'
 
 const RecruiterDashboardPage = () => {
+  const [stats, setStats] = useState<RecruiterDashboardStats | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await getRecruiterDashboardStats()
+        setStats(data)
+      } catch (err: unknown) {
+        console.error('Failed to fetch recruiter dashboard stats:', err)
+        const message = err instanceof Error ? err.message : 'Không thể tải thống kê.'
+        setError(message)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#020617',
-        color: '#e5e7eb',
-        padding: '24px',
-      }}
-    >
-      <header style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '6px' }}>
-          Xin chào, nhà tuyển dụng 👋
-        </h1>
-        <p style={{ color: '#9ca3af', fontSize: '14px' }}>
-          Tổng quan tin tuyển dụng và ứng viên.
-        </p>
-      </header>
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '16px',
-          marginBottom: '24px',
-        }}
-      >
-        <div style={{ borderRadius: '12px', padding: '16px', border: '1px solid rgba(55,65,81,1)' }}>
-          <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '4px' }}>Tổng số tin</p>
-          <p style={{ fontSize: '22px', fontWeight: 700 }}>—</p>
-        </div>
-        <div style={{ borderRadius: '12px', padding: '16px', border: '1px solid rgba(55,65,81,1)' }}>
-          <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '4px' }}>CV mới ứng tuyển</p>
-          <p style={{ fontSize: '22px', fontWeight: 700 }}>—</p>
-        </div>
-      </section>
-      <p>
-        <Link to={ROUTES.RECRUITER_JOBS} style={{ color: '#60a5fa' }}>
-          Quản lý tin tuyển dụng →
-        </Link>
-      </p>
+    <div className="page-ui">
+      <div className="page-ui__container">
+        <PageHeader
+          title="Xin chào, nhà tuyển dụng 👋"
+          subtitle="Theo dõi hiệu suất tuyển dụng và xử lý ứng viên nhanh hơn."
+        />
+
+        {error && (
+          <p className="page-ui__error">{error}</p>
+        )}
+
+        <section className="page-ui__kpi-grid">
+          <StatsCard label="Tổng số tin" value={stats ? stats.totalJobs : '—'} accent="blue" />
+          <StatsCard label="Tin đang mở" value={stats ? stats.openJobs : '—'} accent="green" />
+          <StatsCard
+            label="Tổng số đơn ứng tuyển"
+            value={stats ? stats.totalApplications : '—'}
+            accent="purple"
+          />
+          <StatsCard label="Đơn mới hôm nay" value={stats ? stats.todayApplications : '—'} accent="green" />
+        </section>
+
+        <section className="page-ui__card">
+          <h2 style={{ marginTop: 0 }}>Lối tắt tuyển dụng</h2>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <Link to={ROUTES.RECRUITER_JOBS} className="page-ui__button page-ui__button--primary">
+              Quản lý tin tuyển dụng
+            </Link>
+            <Link to={ROUTES.RECRUITER_JOB_CREATE} className="page-ui__button page-ui__button--secondary">
+              Đăng tin mới
+            </Link>
+          </div>
+        </section>
+      </div>
     </div>
   )
 }
