@@ -272,6 +272,30 @@ const StudentJobDetailPage = () => {
           </>
         )}
 
+        {job.tags && job.tags.length > 0 && (
+          <div style={{ marginTop: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 10px' }}>Tags</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {job.tags.map((tag) => (
+                <span
+                  key={tag}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '14px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    background: 'rgba(99, 102, 241, 0.2)',
+                    border: '1px solid rgba(129, 140, 248, 0.35)',
+                    color: '#c7d2fe',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{ marginTop: '14px' }}>
           <p className="page-ui__muted" style={{ margin: 0 }}>
             Trạng thái ứng tuyển của bạn:{' '}

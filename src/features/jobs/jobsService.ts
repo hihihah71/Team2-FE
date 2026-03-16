@@ -7,6 +7,7 @@ export type JobListQuery = {
   limit?: number
   search?: string
   status?: string
+  tags?: string[]
 }
 
 function toQueryString(query: JobListQuery) {
@@ -15,6 +16,7 @@ function toQueryString(query: JobListQuery) {
   if (query.limit != null) params.set('limit', String(query.limit))
   if (query.search?.trim()) params.set('search', query.search.trim())
   if (query.status?.trim()) params.set('status', query.status.trim())
+  if (query.tags && query.tags.length > 0) params.set('tags', query.tags.join(','))
   const q = params.toString()
   return q ? `?${q}` : ''
 }

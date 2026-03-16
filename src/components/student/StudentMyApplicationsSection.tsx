@@ -4,6 +4,7 @@ import { ROUTES } from '../../constants/routes'
 import type { ApplicationItem, JobItem } from '../../types/domain'
 import { StatusBadge } from '../common/StatusBadge'
 import { rejectMyApplication } from '../../features/applications/applicationsService'
+import '../../pages/PageUI.css'
 
 type Props = {
   applications: ApplicationItem[]
@@ -76,15 +77,32 @@ const StudentMyApplicationsSection = ({ applications, loading }: Props) => {
             : app.status === 'offered'
               ? 'Từ chối offer'
               : 'Từ chối công việc này'
+        const detailUrl = jobId ? ROUTES.STUDENT_JOB_DETAIL.replace(':jobId', jobId) : ''
         return (
-        <div
+        <Link
           key={app._id}
+          to={detailUrl}
           style={{
+            display: 'block',
             borderRadius: '10px',
             padding: '12px 14px',
-            border: '1px solid rgba(55,65,81,1)',
-            backgroundColor: '#020617',
+            border: '1px solid rgba(55, 65, 81, 0.35)',
+            background: 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(10px)',
+            transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
+            textDecoration: 'none',
+            color: 'inherit',
+            cursor: detailUrl ? 'pointer' : 'default',
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(96, 165, 250, 0.25)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(96, 165, 250, 0.08)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(55, 65, 81, 0.35)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
+          onClick={detailUrl ? undefined : (e) => e.preventDefault()}
         >
           <div
             style={{
@@ -96,17 +114,10 @@ const StudentMyApplicationsSection = ({ applications, loading }: Props) => {
             }}
           >
             <div>
-              {jobId ? (
-                <Link
-                  to={ROUTES.STUDENT_JOB_DETAIL.replace(':jobId', jobId)}
-                  style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0', textDecoration: 'none' }}
-                >
-                  {title}
-                </Link>
-              ) : (
-                <p style={{ fontSize: '14px', fontWeight: 600 }}>{title}</p>
-              )}
-              <p style={{ fontSize: '13px', color: '#9ca3af' }}>
+              <p style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
+                {title}
+              </p>
+              <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>
                 {jobInfo?.company || 'Công ty không xác định'} •{' '}
                 {jobInfo?.location || 'Địa điểm linh hoạt'}
               </p>
@@ -141,23 +152,15 @@ const StudentMyApplicationsSection = ({ applications, loading }: Props) => {
           )}
           <button
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
               if (!canReject) return
               handleReject(app._id).catch(() => undefined)
             }}
             disabled={!canReject}
-            style={{
-              marginTop: '10px',
-              padding: '7px 12px',
-              borderRadius: '8px',
-              border: '1px solid rgba(239,68,68,0.45)',
-              background: canReject ? 'rgba(239,68,68,0.15)' : 'rgba(71,85,105,0.25)',
-              color: canReject ? '#fda4af' : '#94a3b8',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: canReject ? 'pointer' : 'not-allowed',
-              opacity: canReject ? 1 : 0.8,
-            }}
+            className="page-ui__btn page-ui__btn--danger"
+            style={{ marginTop: '10px', fontSize: '12px', padding: '7px 12px' }}
             title={!canReject ? 'Đơn đã ở trạng thái từ chối.' : undefined}
           >
             {rejectButtonText}
@@ -167,7 +170,7 @@ const StudentMyApplicationsSection = ({ applications, loading }: Props) => {
               Bạn đã chủ động từ chối công việc này.
             </p>
           )}
-        </div>
+        </Link>
         )
       })}
     </div>

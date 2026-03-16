@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useEffect,
+  useRef,
   useMemo,
   useState,
   type ReactNode,
@@ -12,6 +13,8 @@ import {
   markNotificationRead,
 } from '../features/notifications/notificationsService'
 import type { NotificationItem } from '../types/domain'
+
+const POLL_INTERVAL = 15_000
 
 type NotificationsContextValue = {
   items: NotificationItem[]
@@ -28,13 +31,17 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const [items, setItems] = useState<NotificationItem[]>([])
   const [loading, setLoading] = useState(false)
+  const isFirstLoad = useRef(true)
 
   const refresh = useCallback(async () => {
     if (!user) {
       setItems([])
       return
     }
-    setLoading(true)
+    if (isFirstLoad.current) {
+      setLoading(true)
+      isFirstLoad.current = false
+    }
     try {
       const data = await getMyNotifications()
       setItems(data)
@@ -58,6 +65,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refresh().catch(() => undefined)
+
+    const id = window.setInterval(() => {
+      refresh().catch(() => undefined)
+    }, POLL_INTERVAL)
+
+    return () => window.clearInterval(id)
   }, [refresh])
 
   const value = useMemo<NotificationsContextValue>(

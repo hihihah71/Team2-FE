@@ -6,6 +6,7 @@ type UseJobsOptions = {
   search?: string
   page?: number
   limit?: number
+  tags?: string[]
 }
 
 export function useJobs(options: UseJobsOptions = {}) {
@@ -13,6 +14,8 @@ export function useJobs(options: UseJobsOptions = {}) {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const tagsKey = options.tags?.join(',') ?? ''
 
   useEffect(() => {
     let cancelled = false
@@ -23,6 +26,7 @@ export function useJobs(options: UseJobsOptions = {}) {
       page: options.page,
       limit: options.limit,
       search: options.search,
+      tags: options.tags,
     })
       .then((data) => {
         if (cancelled) return
@@ -43,7 +47,7 @@ export function useJobs(options: UseJobsOptions = {}) {
     return () => {
       cancelled = true
     }
-  }, [options.limit, options.page, options.search])
+  }, [options.limit, options.page, options.search, tagsKey])
 
   return { jobs, total, loading, error }
 }

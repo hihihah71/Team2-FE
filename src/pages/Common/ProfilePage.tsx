@@ -16,6 +16,7 @@ const ProfilePage = () => {
   const [skills, setSkills] = useState(['HTML/CSS', 'JavaScript', 'React', 'TypeScript', 'Node.js', 'UI/UX Design'])
   const [newSkill, setNewSkill] = useState('')
   const [toastMessage, setToastMessage] = useState('')
+  const [toastClosing, setToastClosing] = useState(false)
 
   // 1) Tạo các State chứa dữ liệu Form (giá trị mặc định rỗng, dữ liệu thực tế lấy từ API)
   const [personalInfo, setPersonalInfo] = useState(DEFAULT_PERSONAL_INFO)
@@ -69,10 +70,15 @@ const ProfilePage = () => {
   }, [])
 
   const showToast = (msg: string) => {
+    setToastClosing(false)
     setToastMessage(msg)
     setTimeout(() => {
-      setToastMessage('')
-    }, 3000)
+      setToastClosing(true)
+      setTimeout(() => {
+        setToastMessage('')
+        setToastClosing(false)
+      }, 300)
+    }, 2700)
   }
 
   // File Upload Handlers (Avatar/Cover)
@@ -953,7 +959,7 @@ const ProfilePage = () => {
       )}
 
       {toastMessage && (
-        <div className="profile-toast">
+        <div className={`profile-toast ${toastClosing ? 'profile-toast--closing' : ''}`}>
           {toastMessage}
         </div>
       )}

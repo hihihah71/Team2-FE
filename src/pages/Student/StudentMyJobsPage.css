@@ -1,6 +1,6 @@
 .student-myjobs-page {
   min-height: 100vh;
-  background-color: #020617;
+  background: transparent;
   color: #e5e7eb;
   padding: 24px;
 }
@@ -34,8 +34,15 @@
 .student-myjobs-column {
   border-radius: 16px;
   padding: 20px;
-  border: 1px solid rgba(55, 65, 81, 1);
-  background-color: #020617;
+  border: 1px solid rgba(55, 65, 81, 0.4);
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-myjobs-column:hover {
+  border-color: rgba(96, 165, 250, 0.25);
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.3);
 }
 
 .student-myjobs-column h2 {

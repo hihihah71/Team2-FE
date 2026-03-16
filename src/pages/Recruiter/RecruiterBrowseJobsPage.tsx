@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import { JobCard } from '../../components/job/JobCard'
 import { Pagination } from '../../components/common/Pagination'
@@ -8,7 +7,7 @@ import { TagFilter } from '../../components/common/TagFilter'
 import { useJobs } from '../../features/jobs/useJobs'
 import '../PageUI.css'
 
-const StudentJobsPage = () => {
+const RecruiterBrowseJobsPage = () => {
   const [search, setSearch] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
   const [salaryFilter, setSalaryFilter] = useState<'all' | 'under15' | '15to30' | 'over30'>('all')
@@ -52,8 +51,8 @@ const StudentJobsPage = () => {
     <div className="page-ui">
       <div className="page-ui__container">
         <PageHeader
-          title="Tìm việc"
-          subtitle="Bộ lọc nâng cao theo vị trí, mức lương, sắp xếp theo độ mới và lương."
+          title="Thị trường tuyển dụng"
+          subtitle="Xem tất cả các công việc đang được rao tuyển trên nền tảng. Lọc theo vị trí, mức lương và sắp xếp linh hoạt."
         />
 
         <section className="page-ui__card">
@@ -103,7 +102,7 @@ const StudentJobsPage = () => {
           />
 
           <p className="page-ui__muted" style={{ marginTop: '16px' }}>
-            Tìm thấy {filteredJobs.length} công việc phù hợp
+            Tìm thấy {filteredJobs.length} công việc đang tuyển
           </p>
 
           {error && <p className="page-ui__error">{error}</p>}
@@ -117,7 +116,8 @@ const StudentJobsPage = () => {
                 <JobCard
                   key={job._id}
                   job={job}
-                  detailPath={ROUTES.STUDENT_JOB_DETAIL.replace(':jobId', job._id)}
+                  detailPath={ROUTES.RECRUITER_BROWSE_JOB_DETAIL.replace(':jobId', job._id)}
+                  actionLabel="Xem chi tiết"
                 />
               ))}
             </div>
@@ -125,15 +125,9 @@ const StudentJobsPage = () => {
 
           <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
         </section>
-
-        <p style={{ marginTop: '16px' }}>
-          <Link to={ROUTES.STUDENT_MY_JOBS} style={{ color: '#60a5fa' }}>
-            Xem đơn đã apply & đã lưu →
-          </Link>
-        </p>
       </div>
     </div>
   )
 }
 
-export default StudentJobsPage
+export default RecruiterBrowseJobsPage

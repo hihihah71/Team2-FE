@@ -1,0 +1,13 @@
+.page-transition {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.page-transition--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition--out {
+  opacity: 0;
+  transform: translateY(6px);
+}

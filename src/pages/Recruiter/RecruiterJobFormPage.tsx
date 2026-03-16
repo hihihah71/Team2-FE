@@ -1,10 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import { useEffect, useState } from 'react'
-import { createJob, getJobById, updateJob } from '../../features/jobs/jobsService'
+import { createJob, getJobById, updateJob, deleteJob } from '../../features/jobs/jobsService'
 import { getMyProfile } from '../../features/profile/profileService'
 import { PageHeader } from '../../components/common/PageHeader'
+import { StatusBadge } from '../../components/common/StatusBadge'
+import { TagFilter } from '../../components/common/TagFilter'
+import type { JobItem } from '../../types/domain'
 import '../PageUI.css'
+
+type ToastState = { type: 'success' | 'error'; message: string } | null
 
 const RecruiterJobFormPage = () => {
   const { jobId } = useParams<{ jobId: string }>()
@@ -22,9 +27,18 @@ const RecruiterJobFormPage = () => {
     skills: '',
     phone: '',
     imageUrl: '',
+    tags: [] as string[],
   })
+  const [jobMeta, setJobMeta] = useState<JobItem | null>(null)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastState>(null)
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message })
+    window.setTimeout(() => setToast((prev) => (prev?.message === message ? null : prev)), 2800)
+  }
 
   const formatNumberWithCommas = (value: string) => {
     const digits = value.replace(/\D/g, '')
@@ -47,11 +61,11 @@ const RecruiterJobFormPage = () => {
   }
 
   useEffect(() => {
-    const fetchJob = async () => {
-      if (!isEdit || !jobId) return
-      setLoading(true)
-      try {
-        const job = await getJobById(jobId)
+    if (!isEdit || !jobId) return
+    setLoading(true)
+    getJobById(jobId)
+      .then((job) => {
+        setJobMeta(job)
         setFormData({
           title: job.title ?? '',
           company: job.company ?? '',
@@ -63,163 +77,271 @@ const RecruiterJobFormPage = () => {
           skills: ((job as { skills?: string[] }).skills || []).join(', '),
           phone: job.phone ?? '',
           imageUrl: job.imageUrl ?? '',
+          tags: job.tags ?? [],
         })
-      } catch (err) {
-        console.error(err)
-        alert('Không thể tải dữ liệu bài đăng.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchJob()
+      })
+      .catch(() => showToast('error', 'Không thể tải dữ liệu bài đăng.'))
+      .finally(() => setLoading(false))
   }, [isEdit, jobId])
 
   useEffect(() => {
     if (isEdit) return
-
     let cancelled = false
     getMyProfile()
       .then((profile) => {
         if (cancelled || !profile) return
-
         const companyInfo = (profile as { companyInfo?: Record<string, string> }).companyInfo || {}
         const personalInfo = (profile as { personalInfo?: Record<string, string> }).personalInfo || {}
-
-        const defaultCompany = companyInfo.companyName || ''
-        const defaultLocation = companyInfo.address || ''
-        const defaultPhone = personalInfo.phone || ''
-
         setFormData((prev) => ({
           ...prev,
-          company: prev.company || defaultCompany,
-          location: prev.location || defaultLocation,
-          phone: prev.phone || defaultPhone,
+          company: prev.company || companyInfo.companyName || '',
+          location: prev.location || companyInfo.address || '',
+          phone: prev.phone || personalInfo.phone || '',
         }))
       })
-      .catch((err) => {
-        console.error('Không thể lấy profile để điền mặc định form job:', err)
-      })
-
-    return () => {
-      cancelled = true
-    }
+      .catch(() => undefined)
+    return () => { cancelled = true }
   }, [isEdit])
 
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.company.trim() || !formData.location.trim()) {
-      setError('Vui lòng nhập tiêu đề, công ty và địa điểm.')
+    if (!formData.title.trim() || !formData.company.trim()) {
+      setError('Vui lòng nhập tiêu đề và công ty.')
       return
     }
     setError(null)
+    setSaving(true)
     try {
-      const salaryMin = parseFormattedNumber(formData.salaryMin)
-      const salaryMax = parseFormattedNumber(formData.salaryMax)
       const payload = {
         title: formData.title,
         company: formData.company,
         location: formData.location,
         description: formData.description,
         requirements: formData.requirements,
-        salaryMin,
-        salaryMax,
-        skills: formData.skills
-          .split(',')
-          .map((skill) => skill.trim())
-          .filter(Boolean),
+        salaryMin: parseFormattedNumber(formData.salaryMin),
+        salaryMax: parseFormattedNumber(formData.salaryMax),
+        skills: formData.skills.split(',').map((s) => s.trim()).filter(Boolean),
         phone: formData.phone,
         imageUrl: formData.imageUrl,
+        tags: formData.tags,
       }
 
       if (isEdit && jobId) {
-        await updateJob(jobId, payload)
-        alert('Cập nhật tin thành công!')
+        const updated = await updateJob(jobId, payload)
+        setJobMeta((prev) => (prev ? { ...prev, ...updated } : prev))
+        showToast('success', 'Cập nhật tin thành công!')
       } else {
         await createJob(payload)
-        alert('Đăng tin thành công!')
+        showToast('success', 'Đăng tin thành công!')
+        setTimeout(() => navigate(ROUTES.RECRUITER_JOBS), 600)
       }
-
-      navigate(ROUTES.RECRUITER_JOBS)
-    } catch (err) {
-      console.error(err)
-      alert(isEdit ? 'Cập nhật tin thất bại' : 'Đăng tin thất bại')
+    } catch {
+      showToast('error', isEdit ? 'Cập nhật tin thất bại.' : 'Đăng tin thất bại.')
+    } finally {
+      setSaving(false)
     }
+  }
+
+  const handleToggleStatus = async () => {
+    if (!jobId || !jobMeta) return
+    const nextStatus = jobMeta.status === 'open' ? 'closed' : 'open'
+    try {
+      const updated = await updateJob(jobId, { status: nextStatus })
+      setJobMeta((prev) => (prev ? { ...prev, status: updated.status || nextStatus } : prev))
+      showToast('success', nextStatus === 'open' ? 'Đã mở lại tin tuyển dụng.' : 'Đã đóng tin tuyển dụng.')
+    } catch {
+      showToast('error', 'Không thể cập nhật trạng thái.')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!jobId) return
+    if (!window.confirm('Bạn chắc chắn muốn xoá tin tuyển dụng này? Hành động này không thể hoàn tác.')) return
+    try {
+      await deleteJob(jobId)
+      showToast('success', 'Đã xoá tin tuyển dụng.')
+      setTimeout(() => navigate(ROUTES.RECRUITER_JOBS), 600)
+    } catch {
+      showToast('error', 'Không thể xoá tin tuyển dụng.')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="page-ui">
+        <div className="page-ui__container" style={{ maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p className="page-ui__muted">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="page-ui">
-      <div className="page-ui__container" style={{ maxWidth: '860px' }}>
+      <div className="page-ui__container" style={{ maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto' }}>
+        {toast && (
+          <div
+            style={{
+              position: 'fixed',
+              top: '22px',
+              right: '24px',
+              zIndex: 95,
+              borderRadius: '10px',
+              padding: '10px 16px',
+              color: '#f8fafc',
+              fontSize: '13px',
+              fontWeight: 600,
+              border: toast.type === 'success' ? '1px solid rgba(34,197,94,0.45)' : '1px solid rgba(239,68,68,0.45)',
+              background: toast.type === 'success' ? 'rgba(22,163,74,0.95)' : 'rgba(220,38,38,0.95)',
+              boxShadow: '0 10px 24px rgba(2,6,23,0.45)',
+            }}
+          >
+            {toast.message}
+          </div>
+        )}
+
         <PageHeader
           title={isEdit ? 'Chỉnh sửa tin tuyển dụng' : 'Đăng tin tuyển dụng mới'}
-          subtitle="Biểu mẫu nâng cao gồm lương min/max, kỹ năng, yêu cầu công việc."
+          subtitle={isEdit ? 'Cập nhật thông tin, thay đổi trạng thái hoặc xoá tin.' : 'Điền thông tin để đăng tin tuyển dụng mới lên nền tảng.'}
           backTo={ROUTES.RECRUITER_JOBS}
-          backLabel="Quay lại quản lý tin tuyển dụng"
+          backLabel="Quay lại quản lý tin"
         />
 
-        <section className="page-ui__card">
-          <form className="page-ui__form">
-            {error && <p className="page-ui__error">{error}</p>}
-            <div>
-              <label htmlFor="title" className="page-ui__label">Tiêu đề công việc</label>
-              <input id="title" value={formData.title} onChange={handleChange} className="page-ui__input" />
+        {isEdit && jobMeta && (
+          <section
+            className="page-ui__card"
+            style={{
+              marginBottom: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '16px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span className="page-ui__muted" style={{ fontSize: '13px' }}>Trạng thái hiện tại:</span>
+              <StatusBadge status={jobMeta.status || 'draft'} />
+              <span className="page-ui__muted" style={{ fontSize: '12px' }}>
+                · {(jobMeta.detailViewCount ?? 0).toLocaleString('vi-VN')} lượt xem
+              </span>
+              {jobMeta.createdAt && (
+                <span className="page-ui__muted" style={{ fontSize: '12px' }}>
+                  · Đăng {new Date(jobMeta.createdAt).toLocaleDateString('vi-VN')}
+                </span>
+              )}
             </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={handleToggleStatus}
+                className={`page-ui__btn ${jobMeta.status === 'open' ? 'page-ui__btn--warning' : 'page-ui__btn--success'}`}
+                style={{ fontSize: '12px', padding: '8px 14px' }}
+              >
+                {jobMeta.status === 'open' ? 'Đóng tin tuyển dụng' : 'Mở lại tin tuyển dụng'}
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="page-ui__btn page-ui__btn--danger"
+                style={{ fontSize: '12px', padding: '8px 14px' }}
+              >
+                Xoá tin vĩnh viễn
+              </button>
+            </div>
+          </section>
+        )}
 
+        {error && <p className="page-ui__error">{error}</p>}
+
+        <section className="page-ui__card" style={{ marginBottom: '20px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: '#e2e8f0' }}>Thông tin cơ bản</h3>
+          <div style={{ display: 'grid', gap: '14px' }}>
+            <div>
+              <label htmlFor="title" className="page-ui__label">Tiêu đề công việc *</label>
+              <input id="title" value={formData.title} onChange={handleChange} className="page-ui__input" placeholder="VD: Frontend Developer (React)" />
+            </div>
             <div className="page-ui__form-grid">
               <div>
-                <label htmlFor="company" className="page-ui__label">Công ty</label>
+                <label htmlFor="company" className="page-ui__label">Công ty *</label>
                 <input id="company" value={formData.company} onChange={handleChange} className="page-ui__input" />
               </div>
               <div>
-                <label htmlFor="phone" className="page-ui__label">Số điện thoại</label>
+                <label htmlFor="location" className="page-ui__label">Địa điểm</label>
+                <input id="location" value={formData.location} onChange={handleChange} className="page-ui__input" placeholder="VD: Hà Nội, Remote" />
+              </div>
+            </div>
+            <div className="page-ui__form-grid">
+              <div>
+                <label htmlFor="phone" className="page-ui__label">Số điện thoại liên hệ</label>
                 <input id="phone" value={formData.phone} onChange={handleChange} className="page-ui__input" />
               </div>
-            </div>
-
-            <div className="page-ui__form-grid">
               <div>
-                <label htmlFor="location" className="page-ui__label">Địa điểm</label>
-                <input id="location" value={formData.location} onChange={handleChange} className="page-ui__input" />
-              </div>
-              <div>
-                <label htmlFor="salaryMin" className="page-ui__label">Lương / tháng</label>
-                <input
-                  id="salaryMin"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.salaryMin}
-                  onChange={handleChange}
-                  className="page-ui__input"
-                  placeholder="Ví dụ: 15,000,000"
-                />
-              </div>
-              <div>
-                <label htmlFor="salaryMax" className="page-ui__label">Lương tối đa / tháng</label>
-                <input
-                  id="salaryMax"
-                  type="text"
-                  inputMode="numeric"
-                  value={formData.salaryMax}
-                  onChange={handleChange}
-                  className="page-ui__input"
-                  placeholder="Ví dụ: 25,000,000"
-                />
+                <label htmlFor="skills" className="page-ui__label">Kỹ năng yêu cầu</label>
+                <input id="skills" value={formData.skills} onChange={handleChange} className="page-ui__input" placeholder="React, TypeScript, Node.js" />
               </div>
             </div>
-
-            <div className="page-ui__form-grid">
-              <div>
-                <label htmlFor="imageUrl" className="page-ui__label">Link ảnh</label>
-                <input id="imageUrl" value={formData.imageUrl} onChange={handleChange} className="page-ui__input" />
-              </div>
-              {formData.imageUrl && (
-                <img
-                  src={formData.imageUrl}
-                  alt="Job preview"
-                  style={{ width: 220, height: 120, objectFit: 'cover', borderRadius: 10, border: '1px solid #334155' }}
-                />
-              )}
+            <div>
+              <label className="page-ui__label">Tags</label>
+              <TagFilter
+                selected={formData.tags}
+                onChange={(tags) => setFormData((prev) => ({ ...prev, tags }))}
+              />
             </div>
+          </div>
+        </section>
 
+        <section className="page-ui__card" style={{ marginBottom: '20px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: '#e2e8f0' }}>Mức lương & Hình ảnh</h3>
+          <div className="page-ui__form-grid">
+            <div>
+              <label htmlFor="salaryMin" className="page-ui__label">Lương tối thiểu / tháng</label>
+              <input
+                id="salaryMin"
+                type="text"
+                inputMode="numeric"
+                value={formData.salaryMin}
+                onChange={handleChange}
+                className="page-ui__input"
+                placeholder="VD: 15,000,000"
+              />
+            </div>
+            <div>
+              <label htmlFor="salaryMax" className="page-ui__label">Lương tối đa / tháng</label>
+              <input
+                id="salaryMax"
+                type="text"
+                inputMode="numeric"
+                value={formData.salaryMax}
+                onChange={handleChange}
+                className="page-ui__input"
+                placeholder="VD: 25,000,000"
+              />
+            </div>
+          </div>
+          <div style={{ marginTop: '14px' }}>
+            <label htmlFor="imageUrl" className="page-ui__label">Link ảnh đại diện (tuỳ chọn)</label>
+            <input id="imageUrl" value={formData.imageUrl} onChange={handleChange} className="page-ui__input" placeholder="https://..." />
+          </div>
+          {formData.imageUrl && (
+            <div style={{ marginTop: '12px' }}>
+              <img
+                src={formData.imageUrl}
+                alt="Preview"
+                style={{
+                  maxWidth: '260px',
+                  height: '140px',
+                  objectFit: 'cover',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(51, 65, 85, 0.4)',
+                }}
+              />
+            </div>
+          )}
+        </section>
+
+        <section className="page-ui__card" style={{ marginBottom: '20px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: '#e2e8f0' }}>Mô tả chi tiết</h3>
+          <div style={{ display: 'grid', gap: '14px' }}>
             <div>
               <label htmlFor="description" className="page-ui__label">Mô tả công việc</label>
               <textarea
@@ -227,6 +349,7 @@ const RecruiterJobFormPage = () => {
                 value={formData.description}
                 onChange={handleChange}
                 className="page-ui__textarea"
+                placeholder="Mô tả nhiệm vụ, môi trường làm việc, quyền lợi..."
               />
             </div>
             <div>
@@ -236,24 +359,30 @@ const RecruiterJobFormPage = () => {
                 value={formData.requirements}
                 onChange={handleChange}
                 className="page-ui__textarea"
+                placeholder="Kinh nghiệm, bằng cấp, kỹ năng mềm..."
               />
             </div>
-            <div>
-              <label htmlFor="skills" className="page-ui__label">Kỹ năng (phân cách bằng dấu phẩy)</label>
-              <input
-                id="skills"
-                value={formData.skills}
-                onChange={handleChange}
-                className="page-ui__input"
-                placeholder="React, TypeScript, Node.js"
-              />
-            </div>
-
-            <button type="button" onClick={handleSubmit} className="page-ui__btn page-ui__btn--success">
-              {loading ? 'Đang lưu...' : isEdit ? 'Cập nhật bài viết' : 'Đăng tin ngay'}
-            </button>
-          </form>
+          </div>
         </section>
+
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={() => navigate(ROUTES.RECRUITER_JOBS)}
+            className="page-ui__btn page-ui__btn--secondary"
+          >
+            Huỷ bỏ
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving}
+            className="page-ui__btn page-ui__btn--success"
+            style={{ minWidth: '160px' }}
+          >
+            {saving ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Đăng tin ngay'}
+          </button>
+        </div>
       </div>
     </div>
   )

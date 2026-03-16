@@ -1,6 +1,5 @@
 // Xem chi tiết CV của ứng viên đã apply vào bài đăng
 import { useEffect, useState } from 'react'
-import type { CSSProperties } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   getApplicantByJob,
@@ -72,17 +71,6 @@ const RecruiterApplicantCVPage = () => {
     if (!appDetail) return false
     if (appDetail.status === status) return false
     return ALLOWED_TRANSITIONS[appDetail.status]?.includes(status) || false
-  }
-
-  const actionButtonBaseStyle: CSSProperties = {
-    padding: '9px 14px',
-    borderRadius: '10px',
-    border: '1px solid transparent',
-    fontSize: '14px',
-    fontWeight: 600,
-    letterSpacing: '0.1px',
-    cursor: 'pointer',
-    transition: 'filter 0.15s ease, transform 0.15s ease, opacity 0.15s ease',
   }
 
   return (
@@ -198,56 +186,35 @@ const RecruiterApplicantCVPage = () => {
             <div className="page-ui__actions">
               <button
                 type="button"
+                className="page-ui__btn page-ui__btn--success"
                 onClick={() => updateStatus('shortlisted')}
                 disabled={updating || !isTransitionAllowed('shortlisted')}
-                style={{
-                  ...actionButtonBaseStyle,
-                  background: 'rgba(34,197,94,0.15)',
-                  borderColor: 'rgba(34,197,94,0.45)',
-                  color: '#86efac',
-                }}
               >
-                Shortlist
+                ✓ Shortlist
               </button>
               <button
                 type="button"
+                className="page-ui__btn page-ui__btn--primary"
                 onClick={() => updateStatus('interview')}
                 disabled={updating || !isTransitionAllowed('interview')}
-                style={{
-                  ...actionButtonBaseStyle,
-                  background: 'rgba(59,130,246,0.16)',
-                  borderColor: 'rgba(59,130,246,0.46)',
-                  color: '#bfdbfe',
-                }}
               >
-                Mời phỏng vấn
+                📋 Mời phỏng vấn
               </button>
               <button
                 type="button"
+                className="page-ui__btn page-ui__btn--danger"
                 onClick={() => updateStatus('rejected')}
                 disabled={updating || !isTransitionAllowed('rejected')}
-                style={{
-                  ...actionButtonBaseStyle,
-                  background: 'rgba(239,68,68,0.16)',
-                  borderColor: 'rgba(239,68,68,0.45)',
-                  color: '#fda4af',
-                }}
               >
-                Từ chối
+                ✕ Từ chối
               </button>
               <button
                 type="button"
+                className="page-ui__btn page-ui__btn--offer"
                 onClick={() => updateStatus('offered')}
                 disabled={updating || !isTransitionAllowed('offered')}
-                style={{
-                  ...actionButtonBaseStyle,
-                  background: 'linear-gradient(135deg, #16a34a, #15803d)',
-                  borderColor: 'rgba(22,163,74,0.4)',
-                  color: '#f0fdf4',
-                  boxShadow: '0 10px 22px rgba(22,163,74,0.28)',
-                }}
               >
-                Gửi offer
+                🎉 Gửi offer
               </button>
             </div>
             <p className="page-ui__muted" style={{ marginTop: '8px' }}>

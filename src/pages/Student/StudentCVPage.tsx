@@ -1,5 +1,4 @@
-// Màn hình quản lý CV (upload, danh sách CV, chọn CV chính)
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import StudentCVList from '../../components/student/StudentCVList'
@@ -19,6 +18,8 @@ const StudentCVPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFilePreviewUrl, setSelectedFilePreviewUrl] = useState('')
   const [creating, setCreating] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -58,6 +59,22 @@ const StudentCVPage = () => {
     }
   }, [selectedFile])
 
+  const handleFileSelect = (file: File | null) => {
+    if (file && file.type !== 'application/pdf') {
+      setError('Chỉ hỗ trợ upload file PDF.')
+      return
+    }
+    setSelectedFile(file)
+    setError(null)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFileSelect(file)
+  }
+
   const handleGenerateProfileCv = async () => {
     try {
       setCreating(true)
@@ -77,10 +94,6 @@ const StudentCVPage = () => {
   const handleCreateCv = async () => {
     if (!selectedFile) {
       setError('Vui lòng chọn file PDF trước khi upload.')
-      return
-    }
-    if (selectedFile.type !== 'application/pdf') {
-      setError('Chỉ hỗ trợ upload file PDF.')
       return
     }
     try {
@@ -134,66 +147,107 @@ const StudentCVPage = () => {
           subtitle="Upload PDF hoặc tạo CV tự động từ Profile, có preview trước khi lưu."
         />
 
-        {error && (
-          <p className="page-ui__error">{error}</p>
-        )}
+        {error && <p className="page-ui__error">{error}</p>}
 
-        <section className="student-cv-card page-ui__card">
-          <div className="student-cv-form-row">
+        {/* Upload section */}
+        <section className="cv-upload page-ui__card">
+          <h3 className="cv-upload__title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Thêm CV mới
+          </h3>
+
+          <div className="cv-upload__name-row">
+            <label className="cv-upload__label">Tên hiển thị</label>
+            <input
+              type="text"
+              placeholder="Ví dụ: CV Frontend Developer 2026"
+              value={newCvName}
+              onChange={(e) => setNewCvName(e.target.value)}
+              className="page-ui__input"
+            />
+          </div>
+
           <input
-            type="text"
-            placeholder="Tên hiển thị CV (tuỳ chọn)"
-            value={newCvName}
-            onChange={(e) => setNewCvName(e.target.value)}
-            className="student-cv-input"
-          />
-          <input
+            ref={fileInputRef}
             type="file"
             accept="application/pdf"
-            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-            className="student-cv-input"
+            onChange={(e) => handleFileSelect(e.target.files?.[0] || null)}
+            hidden
           />
-          <button
-            type="button"
-            onClick={handleCreateCv}
-            disabled={creating}
-            className="student-cv-add-btn"
+
+          <div
+            className={`cv-upload__dropzone ${dragOver ? 'cv-upload__dropzone--active' : ''} ${selectedFile ? 'cv-upload__dropzone--has-file' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
           >
-            {creating ? 'Đang tạo...' : 'Thêm CV'}
-          </button>
-          <button
-            type="button"
-            onClick={handleGenerateProfileCv}
-            disabled={creating}
-            className="page-ui__btn page-ui__btn--primary"
-          >
-            Tạo CV từ Profile
-          </button>
+            {selectedFile ? (
+              <div className="cv-upload__file-info">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <div>
+                  <p className="cv-upload__file-name">{selectedFile.name}</p>
+                  <p className="cv-upload__file-size">{(selectedFile.size / 1024).toFixed(0)} KB • PDF</p>
+                </div>
+                <button
+                  type="button"
+                  className="cv-upload__file-clear"
+                  onClick={(e) => { e.stopPropagation(); setSelectedFile(null) }}
+                  title="Bỏ chọn file"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <>
+                <svg className="cv-upload__dropzone-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p className="cv-upload__dropzone-text">
+                  Kéo thả file PDF vào đây hoặc <span>nhấn để chọn file</span>
+                </p>
+                <p className="cv-upload__dropzone-hint">Chỉ hỗ trợ file PDF, tối đa 10MB</p>
+              </>
+            )}
           </div>
-          {selectedFile && (
-            <p className="page-ui__muted" style={{ marginTop: '8px' }}>
-              File đã chọn: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
-            </p>
-          )}
+
           {selectedFilePreviewUrl && (
-            <div style={{ marginTop: '12px' }}>
-              <p className="page-ui__muted" style={{ marginBottom: '6px' }}>
-                Preview PDF trước khi lưu:
-              </p>
+            <div className="cv-upload__preview">
+              <p className="cv-upload__preview-label">Xem trước PDF:</p>
               <iframe
                 src={selectedFilePreviewUrl}
-                title="CV preview before upload"
-                style={{
-                  width: '100%',
-                  height: '420px',
-                  border: '1px solid #334155',
-                  borderRadius: '10px',
-                  background: '#0b1220',
-                }}
+                title="CV preview"
+                className="cv-upload__preview-frame"
               />
             </div>
           )}
 
+          <div className="cv-upload__actions">
+            <button
+              type="button"
+              onClick={handleCreateCv}
+              disabled={creating || !selectedFile}
+              className="page-ui__btn page-ui__btn--primary"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              {creating ? 'Đang upload...' : 'Upload & Lưu CV'}
+            </button>
+            <button
+              type="button"
+              onClick={handleGenerateProfileCv}
+              disabled={creating}
+              className="page-ui__btn page-ui__btn--success"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Tạo CV từ Profile
+            </button>
+          </div>
+        </section>
+
+        {/* CV List section */}
+        <section className="cv-list-section">
+          <h3 className="cv-list-section__title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            CV của bạn ({cvs.length})
+          </h3>
           <StudentCVList
             cvs={cvs}
             loading={loading}
@@ -201,6 +255,7 @@ const StudentCVPage = () => {
             onDelete={handleDelete}
           />
         </section>
+
         <p style={{ marginTop: '16px' }}>
           <Link to={ROUTES.STUDENT_DASHBOARD} className="page-ui__back-link">← Về trang tổng quan</Link>
         </p>
@@ -210,4 +265,3 @@ const StudentCVPage = () => {
 }
 
 export default StudentCVPage
-

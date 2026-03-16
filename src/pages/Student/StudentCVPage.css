@@ -1,69 +1,333 @@
-.student-cv-page {
-  min-height: 100vh;
-  background-color: #020617;
-  color: #e5e7eb;
-  padding: 24px;
+/* ── Upload section ── */
+.cv-upload {
+  margin-bottom: 28px;
 }
 
-.student-cv-shell {
-  /* max-width: 1100px; */
-  margin: 0 120px;
-}
-
-.student-cv-header {
-  margin-bottom: 20px;
-}
-
-.student-cv-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.student-cv-subtitle {
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-.student-cv-card {
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(55, 65, 81, 1);
-  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), transparent 45%),
-    #020617;
-}
-
-.student-cv-form-row {
+.cv-upload__title {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 20px;
+}
+.cv-upload__title svg {
+  color: #818cf8;
+}
+
+.cv-upload__name-row {
   margin-bottom: 16px;
+}
+
+.cv-upload__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Drag-and-drop zone ── */
+.cv-upload__dropzone {
+  border: 2px dashed rgba(99, 102, 241, 0.25);
+  border-radius: 14px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.25s ease, background 0.25s ease;
+  background: rgba(15, 23, 42, 0.3);
+  min-height: 120px;
+}
+
+.cv-upload__dropzone:hover,
+.cv-upload__dropzone--active {
+  border-color: rgba(99, 102, 241, 0.55);
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.cv-upload__dropzone--has-file {
+  border-style: solid;
+  border-color: rgba(99, 102, 241, 0.3);
+  padding: 16px 20px;
+  min-height: auto;
+}
+
+.cv-upload__dropzone-icon {
+  color: #475569;
+  margin-bottom: 8px;
+  transition: color 0.2s ease;
+}
+.cv-upload__dropzone:hover .cv-upload__dropzone-icon {
+  color: #818cf8;
+}
+
+.cv-upload__dropzone-text {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+}
+.cv-upload__dropzone-text span {
+  color: #818cf8;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cv-upload__dropzone-hint {
+  font-size: 12px;
+  color: #475569;
+  margin: 6px 0 0;
+}
+
+/* File info when selected */
+.cv-upload__file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.cv-upload__file-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.cv-upload__file-size {
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0;
+}
+
+.cv-upload__file-clear {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+.cv-upload__file-clear:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Preview */
+.cv-upload__preview {
+  margin-top: 16px;
+}
+
+.cv-upload__preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cv-upload__preview-frame {
+  width: 100%;
+  height: 450px;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 12px;
+  background: #0b1220;
+}
+
+/* Action buttons row */
+.cv-upload__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.cv-upload__actions .page-ui__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── CV list section ── */
+.cv-list-section {
+  margin-top: 8px;
+}
+
+.cv-list-section__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0 0 16px;
+}
+.cv-list-section__title svg {
+  color: #818cf8;
+}
+
+/* ── CV cards ── */
+.cv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cv-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.5), rgba(11, 18, 32, 0.55));
+  backdrop-filter: blur(12px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.cv-card:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 6px 24px rgba(2, 6, 23, 0.3);
+  transform: translateY(-1px);
+}
+
+.cv-card--default {
+  border-color: rgba(34, 197, 94, 0.2);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.5), rgba(22, 163, 74, 0.04));
+}
+.cv-card--default:hover {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.cv-card--empty {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  border-style: dashed;
+}
+
+.cv-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #818cf8;
+}
+.cv-card--default .cv-card__icon {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.cv-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cv-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.student-cv-input {
-  flex: 1 1 260px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #4b5563;
-  background-color: #020617;
-  color: #e5e7eb;
-  font-size: 14px;
-}
-
-.student-cv-add-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(129, 140, 248, 0.9));
-  color: #fff;
+.cv-card__name {
+  font-size: 15px;
   font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
+  color: #f1f5f9;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.student-cv-back-link {
-  margin-top: 16px;
-  color: #60a5fa;
+.cv-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 999px;
+  padding: 2px 10px 2px 8px;
 }
 
+.cv-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.cv-card__open-link {
+  color: #818cf8;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.cv-card__open-link:hover {
+  color: #a5b4fc;
+}
+
+.cv-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cv-card__action-btn {
+  padding: 7px 12px !important;
+  font-size: 12px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .cv-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cv-card__actions {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .cv-card__action-btn {
+    flex: 1;
+    justify-content: center !important;
+  }
+  .cv-upload__actions {
+    flex-direction: column;
+  }
+  .cv-upload__actions .page-ui__btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

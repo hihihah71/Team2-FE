@@ -31,6 +31,7 @@ export type JobItem = {
   salaryFrom?: number | null
   salaryTo?: number | null
   deadline?: string | null
+  tags?: string[]
   detailViewCount?: number
   status?: JobStatus
   createdAt?: string

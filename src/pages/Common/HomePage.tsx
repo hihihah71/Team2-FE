@@ -65,7 +65,8 @@ const HomePage = () => {
       <div
         style={{
           width: "100%",
-          backgroundColor: "#020617",
+          backgroundColor: "rgba(2, 6, 23, 0.75)",
+          backdropFilter: "blur(12px)",
           borderRadius: "16px",
           padding: "0 48px 32px 48px",
           boxShadow: "0 25px 50px -12px rgba(15,23,42,0.9)",
