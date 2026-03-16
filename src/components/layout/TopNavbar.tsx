@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { ROUTES } from '../../constants/routes'
 
 type TopNavbarProps = {
   onOpenLogin?: () => void
@@ -13,56 +12,67 @@ const TopNavbar = ({ onOpenLogin, onOpenRegister }: TopNavbarProps) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '18px 0',
-        borderBottom: '1px solid rgba(31,41,55,1)',
+        padding: '20px 0',
+        borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        backgroundColor: 'rgba(2, 6, 23, 0.5)',
+        backdropFilter: 'blur(12px)',
+        margin: '0 -20px',
+        paddingLeft: '20px',
+        paddingRight: '20px',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
         <div
           style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '999px',
-            background:
-              'conic-gradient(from 180deg, #4f46e5, #22c55e, #0ea5e9, #4f46e5)',
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '16px',
-            fontWeight: 700,
-            color: '#0b1120',
+            fontSize: '18px',
+            fontWeight: 800,
+            color: '#fff',
+            boxShadow: '0 8px 16px rgba(99, 102, 241, 0.3)',
           }}
         >
-          CV
+          C
         </div>
         <div>
           <span
             style={{
-              fontSize: '16px',
-              fontWeight: 600,
-              letterSpacing: 0.2,
+              fontSize: '18px',
+              fontWeight: 700,
+              letterSpacing: -0.5,
+              color: '#f8fafc',
+              display: 'block',
+              lineHeight: 1,
             }}
           >
-            CV Matching Platform
+            CV Matching
           </span>
-          <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>
-            Student & Recruiter Portal
-          </p>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
+            Smart Career Portal
+          </span>
         </div>
-      </div>
+      </Link>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {onOpenLogin && (
           <button
             type="button"
             onClick={onOpenLogin}
+            className="page-ui__button page-ui__button--secondary"
             style={{
-              padding: '6px 14px',
-              fontSize: '13px',
-              borderRadius: '999px',
-              border: '1px solid rgba(75,85,99,1)',
-              color: '#e5e7eb',
+              padding: '8px 20px',
+              fontSize: '14px',
+              border: 'none',
               background: 'transparent',
+              color: '#94a3b8',
             }}
           >
             Đăng nhập
@@ -72,15 +82,10 @@ const TopNavbar = ({ onOpenLogin, onOpenRegister }: TopNavbarProps) => {
           <button
             type="button"
             onClick={onOpenRegister}
+            className="page-ui__button page-ui__button--primary"
             style={{
-              padding: '7px 16px',
-              fontSize: '13px',
-              borderRadius: '999px',
-              background:
-                'linear-gradient(135deg, rgba(59,130,246,1), rgba(129,140,248,1))',
-              color: '#f9fafb',
-              fontWeight: 600,
-              border: 'none',
+              padding: '8px 24px',
+              fontSize: '14px',
             }}
           >
             Đăng ký
@@ -92,4 +97,5 @@ const TopNavbar = ({ onOpenLogin, onOpenRegister }: TopNavbarProps) => {
 }
 
 export default TopNavbar
+
 
