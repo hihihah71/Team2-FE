@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext'
 // Common
 const HomePage = lazy(() => import('../pages/Common/HomePage'))
 const ProfilePage = lazy(() => import('../pages/Common/ProfilePage'))
+const NotificationsPage = lazy(() => import('../pages/Common/NotificationsPage'))
 
 // Student
 const StudentDashboardPage = lazy(() => import('../pages/Student/StudentDashboardPage'))
@@ -29,6 +30,8 @@ const RecruiterJobDetailPage = lazy(() => import('../pages/Recruiter/RecruiterJo
 const RecruiterJobFormPage = lazy(() => import('../pages/Recruiter/RecruiterJobFormPage'))
 const RecruiterJobStatsPage = lazy(() => import('../pages/Recruiter/RecruiterJobStatsPage'))
 const RecruiterApplicantCVPage = lazy(() => import('../pages/Recruiter/RecruiterApplicantCVPage'))
+const RecruiterBrowseJobsPage = lazy(() => import('../pages/Recruiter/RecruiterBrowseJobsPage'))
+const RecruiterBrowseJobDetailPage = lazy(() => import('../pages/Recruiter/RecruiterBrowseJobDetailPage'))
 
 function PageFallback() {
   return (
@@ -39,8 +42,15 @@ function PageFallback() {
         alignItems: 'center',
         justifyContent: 'center',
         color: '#9ca3af',
+        animation: 'page-fallback-pulse 1.5s ease-in-out infinite',
       }}
     >
+      <style>{`
+        @keyframes page-fallback-pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+      `}</style>
       Đang tải...
     </div>
   )
@@ -80,6 +90,7 @@ export function AppRoutes() {
           <Route path="jobs/:jobId" element={<StudentJobDetailPage />} />
           <Route path="my-jobs" element={<StudentMyJobsPage />} />
           <Route path="cv" element={<StudentCVPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
@@ -100,6 +111,9 @@ export function AppRoutes() {
           <Route path="jobs/:jobId/stats" element={<RecruiterJobStatsPage />} />
           <Route path="jobs/:jobId/applicants/:applicantId" element={<RecruiterApplicantCVPage />} />
           <Route path="jobs/:jobId" element={<RecruiterJobDetailPage />} />
+          <Route path="browse" element={<RecruiterBrowseJobsPage />} />
+          <Route path="browse/:jobId" element={<RecruiterBrowseJobDetailPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 

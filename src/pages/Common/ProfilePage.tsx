@@ -3,6 +3,9 @@ import { Link, useLocation } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import ProfileView from '../../components/Profile/ProfileView'
 import './ProfilePage.css'
+import '../PageUI.css'
+import { DEFAULT_COMPANY_INFO, DEFAULT_PERSONAL_INFO } from '../../constants/profileDefaults'
+import { getMyProfile, saveMyProfile, type ProfilePayload } from '../../features/profile/profileService'
 
 const ProfilePage = () => {
   const location = useLocation()
@@ -13,123 +16,69 @@ const ProfilePage = () => {
   const [skills, setSkills] = useState(['HTML/CSS', 'JavaScript', 'React', 'TypeScript', 'Node.js', 'UI/UX Design'])
   const [newSkill, setNewSkill] = useState('')
   const [toastMessage, setToastMessage] = useState('')
+  const [toastClosing, setToastClosing] = useState(false)
 
-  // 1) Tạo các State chứa dữ liệu Form
-  const [personalInfo, setPersonalInfo] = useState({
-    id: isRecruiter ? 'REC-89234' : 'USR-10492',
-    isVerified: false,
-    fullName: isRecruiter ? 'Công ty ABC' : 'Nguyễn Văn A',
-    role: isRecruiter ? 'Nhà tuyển dụng' : 'Frontend Developer',
-    dob: '1999-01-01',
-    phone: '0987654321',
-    email: isRecruiter ? 'recruiter@company.com' : 'nguyenvana@example.com',
-    address: 'Quận 1, TP Hồ Chí Minh',
-    summary: 'Tôi là một Frontend Developer đam mê xây dựng các giao diện web tối ưu, thân thiện với người dùng và có kiến trúc rõ ràng. Tôi luôn tìm tòi học hỏi áp dụng các công nghệ mới nhất.',
-    avatarUrl: '',
-    coverUrl: ''
-  })
+  // 1) Tạo các State chứa dữ liệu Form (giá trị mặc định rỗng, dữ liệu thực tế lấy từ API)
+  const [personalInfo, setPersonalInfo] = useState(DEFAULT_PERSONAL_INFO)
+  const [companyInfo, setCompanyInfo] = useState(DEFAULT_COMPANY_INFO)
 
-  const [companyInfo, setCompanyInfo] = useState({
-    companyName: 'Công ty CP Công Nghệ ABC',
-    website: 'https://abc-tech.com',
-    size: '51-200',
-    address: 'Tòa nhà X, Quận Y, TP. Hồ Chí Minh',
-    description: ''
-  })
-
-  const [experiences, setExperiences] = useState([
-    {
-      id: 1,
-      title: 'Frontend Engineer',
-      company: 'Công ty Cổ phần Alpha Tech',
-      date: '10/2021 – Hiện tại',
-      desc: '- Phát triển và bảo trì tính năng mới cho Web Dashboard nội bộ bằng React và TypeScript.\n- Tối ưu hóa bundle size giảm 30%, cải thiện thời gian load trang.'
-    },
-    {
-      id: 2,
-      title: 'Thực tập sinh Lập trình Web',
-      company: 'Beta Software Lab',
-      date: '03/2021 – 09/2021',
-      desc: '- Xây dựng landing page đáp ứng theo bản vẽ Figma.\n- Đào tạo viết test tự động cơ bản bằng Jest.'
-    }
-  ])
-
-  const [educations, setEducations] = useState([
-    {
-      id: 1,
-      title: 'Cử nhân Công nghệ Thông tin',
-      school: 'Đại học Khoa học Tự nhiên, TP.HCM',
-      date: '2017 – 2021',
-      desc: '- Tốt nghiệp loại Giỏi.\n- Chuyên ngành Công nghệ phần mềm.'
-    }
-  ])
-
-  const [socialLinks, setSocialLinks] = useState({
+  const [experiences, setExperiences] = useState<any[]>([])
+  const [educations, setEducations] = useState<any[]>([])
+  const [socialLinks, setSocialLinks] = useState<{ github: string; linkedin: string; portfolio: string }>({
     github: '',
     linkedin: '',
-    portfolio: ''
+    portfolio: '',
   })
+  const [projects, setProjects] = useState<any[]>([])
+  const [languages, setLanguages] = useState<any[]>([])
+  const [certifications, setCertifications] = useState<any[]>([])
+  const [activities, setActivities] = useState<any[]>([])
 
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: 'E-commerce React App',
-      date: '11/2022 – 12/2022',
-      role: 'Frontend Developer',
-      technologies: 'React, Redux, Tailwind CSS',
-      desc: '- Xây dựng giao diện hướng người dùng và tích hợp API giỏ hàng.\n- Tối ưu hóa hiệu suất load sản phẩm.',
-      link: 'https://github.com/abc/ecommerce'
-    }
-  ])
-
-  const [languages, setLanguages] = useState([
-    { id: 1, name: 'Tiếng Anh', level: 'IELTS 7.0 / Giao tiếp tốt' }
-  ])
-
-  const [certifications, setCertifications] = useState([
-    { id: 1, name: 'AWS Certified Cloud Practitioner', organization: 'Amazon Web Services', date: '08/2023' }
-  ])
-
-  const [activities, setActivities] = useState([
-    { id: 1, name: 'Google Developer Student Clubs (GDSC)', role: 'Core Team Member', date: '09/2020 – 06/2021', desc: '- Tổ chức các buổi workshop về công nghệ web.\n- Hỗ trợ giải đáp thắc mắc cho tham gia.' }
-  ])
-
-  const [hobbies, setHobbies] = useState(['Đọc sách công nghệ', 'Thể thao điện tử', 'Bơi lội'])
+  const [hobbies, setHobbies] = useState<string[]>([])
   const [newHobby, setNewHobby] = useState('')
 
-  // 2) Load data từ LocalStorage khi khởi tạo (F5 không mất)
+  // 2) Load data từ API khi khởi tạo (F5 không mất)
   useEffect(() => {
     document.title = 'Thông tin cá nhân | JS CV'
-    const savedPersonal = localStorage.getItem('cv_personalInfo')
-    const savedCompany = localStorage.getItem('cv_companyInfo')
-    const savedSkills = localStorage.getItem('cv_skills')
-    const savedExp = localStorage.getItem('cv_experiences')
-    const savedEdu = localStorage.getItem('cv_educations')
-    const savedSocial = localStorage.getItem('cv_socialLinks')
-    const savedProjects = localStorage.getItem('cv_projects')
-    const savedLang = localStorage.getItem('cv_languages')
-    const savedCert = localStorage.getItem('cv_certifications')
-    const savedAct = localStorage.getItem('cv_activities')
-    const savedHob = localStorage.getItem('cv_hobbies')
-
-    if (savedPersonal) setPersonalInfo(JSON.parse(savedPersonal))
-    if (savedCompany) setCompanyInfo(JSON.parse(savedCompany))
-    if (savedSkills) setSkills(JSON.parse(savedSkills))
-    if (savedExp) setExperiences(JSON.parse(savedExp))
-    if (savedEdu) setEducations(JSON.parse(savedEdu))
-    if (savedSocial) setSocialLinks(JSON.parse(savedSocial))
-    if (savedProjects) setProjects(JSON.parse(savedProjects))
-    if (savedLang) setLanguages(JSON.parse(savedLang))
-    if (savedCert) setCertifications(JSON.parse(savedCert))
-    if (savedAct) setActivities(JSON.parse(savedAct))
-    if (savedHob) setHobbies(JSON.parse(savedHob))
+    getMyProfile()
+      .then((data) => {
+        if (!data) return
+        if (data.personalInfo) {
+          setPersonalInfo((prev) => ({ ...prev, ...data.personalInfo }))
+        }
+        if (data.companyInfo) {
+          setCompanyInfo((prev) => ({ ...prev, ...data.companyInfo }))
+        }
+        if (data.skills) setSkills(data.skills)
+        if (data.experiences) setExperiences(data.experiences)
+        if (data.educations) setEducations(data.educations)
+        if (data.socialLinks) {
+          setSocialLinks((prev) => ({
+            ...prev,
+            ...data.socialLinks,
+          }))
+        }
+        if (data.projects) setProjects(data.projects)
+        if (data.languages) setLanguages(data.languages)
+        if (data.certifications) setCertifications(data.certifications)
+        if (data.activities) setActivities(data.activities)
+        if (data.hobbies) setHobbies(data.hobbies)
+      })
+      .catch((error) => {
+        console.error('Không thể tải hồ sơ từ API:', error)
+      })
   }, [])
 
   const showToast = (msg: string) => {
+    setToastClosing(false)
     setToastMessage(msg)
     setTimeout(() => {
-      setToastMessage('')
-    }, 3000)
+      setToastClosing(true)
+      setTimeout(() => {
+        setToastMessage('')
+        setToastClosing(false)
+      }, 300)
+    }, 2700)
   }
 
   // File Upload Handlers (Avatar/Cover)
@@ -354,33 +303,71 @@ const ProfilePage = () => {
   }
 
   const handleResetPersonal = () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa bộ nhớ cục bộ và tải lại?')) {
-      localStorage.clear()
-      window.location.reload()
+    if (window.confirm('Bạn có chắc chắn muốn khôi phục lại dữ liệu hồ sơ theo dữ liệu từ server?')) {
+      getMyProfile()
+        .then((data) => {
+          if (!data) return
+          if (data.personalInfo) {
+            setPersonalInfo((prev) => ({ ...prev, ...data.personalInfo }))
+          } else {
+            setPersonalInfo(DEFAULT_PERSONAL_INFO)
+          }
+          if (data.companyInfo) {
+            setCompanyInfo((prev) => ({ ...prev, ...data.companyInfo }))
+          } else {
+            setCompanyInfo(DEFAULT_COMPANY_INFO)
+          }
+          setSkills(data.skills ?? [])
+          setExperiences(data.experiences ?? [])
+          setEducations(data.educations ?? [])
+          if (data.socialLinks) {
+            setSocialLinks((prev) => ({
+              ...prev,
+              ...data.socialLinks,
+            }))
+          } else {
+            setSocialLinks({
+              github: '',
+              linkedin: '',
+              portfolio: '',
+            })
+          }
+          setProjects(data.projects ?? [])
+          setLanguages(data.languages ?? [])
+          setCertifications(data.certifications ?? [])
+          setActivities(data.activities ?? [])
+          setHobbies(data.hobbies ?? [])
+          showToast('Đã khôi phục hồ sơ theo dữ liệu mới nhất từ server.')
+        })
+        .catch((error) => {
+          console.error('Không thể khôi phục hồ sơ từ API:', error)
+          alert('Không thể tải lại dữ liệu từ server. Vui lòng thử lại sau.')
+        })
     }
   }
 
-  const handleSavePersonal = () => {
+  const handleSavePersonal = async () => {
+    const payload: ProfilePayload = {
+      personalInfo,
+      companyInfo,
+      skills,
+      experiences,
+      educations,
+      socialLinks,
+      projects,
+      languages,
+      certifications,
+      activities,
+      hobbies,
+    }
+
     try {
-      localStorage.setItem('cv_personalInfo', JSON.stringify(personalInfo))
-      localStorage.setItem('cv_skills', JSON.stringify(skills))
-      localStorage.setItem('cv_experiences', JSON.stringify(experiences))
-      localStorage.setItem('cv_educations', JSON.stringify(educations))
-      localStorage.setItem('cv_socialLinks', JSON.stringify(socialLinks))
-      localStorage.setItem('cv_projects', JSON.stringify(projects))
-      localStorage.setItem('cv_languages', JSON.stringify(languages))
-      localStorage.setItem('cv_certifications', JSON.stringify(certifications))
-      localStorage.setItem('cv_activities', JSON.stringify(activities))
-      localStorage.setItem('cv_hobbies', JSON.stringify(hobbies))
+      await saveMyProfile(payload)
       showToast('Lưu thông tin cá nhân và CV thành công!')
       setIsEditing(false) // Auto-switch to View mode
     } catch (error) {
-      console.error(error)
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        alert('Lưu thất bại: Dung lượng ảnh (Avatar/Bìa) quá lớn vượt mức cho phép của trình duyệt. Vui lòng tải lên ảnh có kích thước nhỏ hơn (dưới 2MB)!')
-      } else {
-        alert('Lưu thông tin thất bại, vui lòng kiểm tra lại bộ nhớ trình duyệt!')
-      }
+      console.error('Lưu thông tin hồ sơ thất bại:', error)
+      alert('Lưu thông tin thất bại, vui lòng thử lại sau!')
     }
   }
 
@@ -389,19 +376,15 @@ const ProfilePage = () => {
   const handleCancelCompany = () => showToast('Đã hủy các thay đổi ở hồ sơ công ty.')
 
   const handleUpdateCompany = () => {
-    try {
-      localStorage.setItem('cv_companyInfo', JSON.stringify(companyInfo))
-      showToast('Cập nhật hồ sơ công ty thành công!')
-      setIsEditing(false) // Auto-switch to View mode
-    } catch (error) {
-      console.error(error)
-      alert('Lưu thông tin công ty thất bại!')
-    }
+    // Dùng chung API lưu hồ sơ tổng thể
+    handleSavePersonal()
   }
 
   const displayAvatar = personalInfo.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(personalInfo.fullName)}&background=1e293b&color=f8fafc&size=140`
 
   return (
+    <div className="page-ui">
+      <div className="page-ui__container">
     <div className="profile-container">
       {/* Nút Toggle Edit/View */}
       <div className="profile-toggle-container" style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 24px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -490,7 +473,7 @@ const ProfilePage = () => {
                 onClick={() => setActiveTab('personal')}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                Thông tin CV Cá nhân
+                Thông tin hồ sơ
               </button>
 
               {isRecruiter && (
@@ -505,7 +488,7 @@ const ProfilePage = () => {
               )}
             </div>
 
-            <div className="profile-main-area">
+              <div className="profile-main-area">
               {activeTab === 'personal' && (
                 <>
                   {/* Thông tin cơ bản */}
@@ -581,6 +564,9 @@ const ProfilePage = () => {
                     </div>
                   </div>
 
+                  {/* Các khối CV chi tiết chỉ dùng cho student */}
+                  {!isRecruiter && (
+                  <>
                   {/* Liên kết mạng xã hội */}
                   <div className="profile-section-fade">
                     <h2 className="profile-section-title">
@@ -907,6 +893,8 @@ const ProfilePage = () => {
                       </div>
                     </div>
                   </div>
+                  </>
+                  )}
 
                   {/* Nút lưu */}
                   <div className="profile-form-actions">
@@ -971,10 +959,12 @@ const ProfilePage = () => {
       )}
 
       {toastMessage && (
-        <div className="profile-toast">
+        <div className={`profile-toast ${toastClosing ? 'profile-toast--closing' : ''}`}>
           {toastMessage}
         </div>
       )}
+    </div>
+      </div>
     </div>
   )
 }

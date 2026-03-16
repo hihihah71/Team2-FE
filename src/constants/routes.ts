@@ -11,16 +11,20 @@ export const ROUTES = {
   STUDENT_JOB_DETAIL: '/student/jobs/:jobId',
   STUDENT_MY_JOBS: '/student/my-jobs', // đã apply / đã lưu
   STUDENT_CV: '/student/cv',
+  STUDENT_NOTIFICATIONS: '/student/notifications',
   STUDENT_PROFILE: '/student/profile',
 
   // Recruiter (nhà tuyển dụng)
   RECRUITER_DASHBOARD: '/recruiter/dashboard',
   RECRUITER_JOBS: '/recruiter/jobs',
-  RECRUITER_JOB_DETAIL: '/recruiter/jobs/:jobId', // danh sách ứng viên 1 bài đăng
+  RECRUITER_JOB_DETAIL: '/recruiter/jobs/:jobId',
   RECRUITER_JOB_CREATE: '/recruiter/jobs/new',
   RECRUITER_JOB_EDIT: '/recruiter/jobs/:jobId/edit',
   RECRUITER_JOB_STATS: '/recruiter/jobs/:jobId/stats',
   RECRUITER_APPLICANT_CV: '/recruiter/jobs/:jobId/applicants/:applicantId',
+  RECRUITER_BROWSE_JOBS: '/recruiter/browse',
+  RECRUITER_BROWSE_JOB_DETAIL: '/recruiter/browse/:jobId',
+  RECRUITER_NOTIFICATIONS: '/recruiter/notifications',
   RECRUITER_PROFILE: '/recruiter/profile',
 } as const
 

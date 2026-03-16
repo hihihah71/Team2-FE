@@ -1,12 +1,16 @@
 // Trang homepage cho phép chọn loại người dùng (sinh viên / nhà tuyển dụng)
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
 import { ROUTES } from "../../constants/routes"
 import TopNavbar from "../../components/layout/TopNavbar"
 import UserTypeCard from "../../components/home/UserTypeCard"
 import AuthModal from "../../components/auth/AuthModal"
+import { JobCard } from "../../components/job/JobCard"
+import { getJobs } from "../../features/jobs/jobsService"
+import type { JobItem } from "../../types/domain"
+import "../PageUI.css"
 
 type AuthMode = "login" | "register" | null
 type UserRole = "student" | "recruiter" | null
@@ -17,6 +21,7 @@ const HomePage = () => {
 
   const [authMode, setAuthMode] = useState<AuthMode>(null)
   const [selectedRole, setSelectedRole] = useState<UserRole>(null)
+  const [featuredJobs, setFeaturedJobs] = useState<JobItem[]>([])
 
   useEffect(() => {
     if (loading) return
@@ -31,19 +36,18 @@ const HomePage = () => {
     }
   }, [user, loading, navigate])
 
+  useEffect(() => {
+    getJobs({ page: 1, limit: 4 })
+      .then((res) => setFeaturedJobs(res.items))
+      .catch(() => setFeaturedJobs([]))
+  }, [])
+
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#020617",
-          color: "#9ca3af",
-        }}
-      >
-        Đang tải...
+      <div className="page-ui">
+        <div className="page-ui__container">
+          <p className="page-ui__muted">Đang tải...</p>
+        </div>
       </div>
     )
   }
@@ -56,20 +60,13 @@ const HomePage = () => {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #0f172a, #1e293b)",
-        color: "#e5e7eb",
-        padding: "40px 48px",
-      }}
-    >
+    <div className="page-ui">
+      <div className="page-ui__container">
       <div
         style={{
           width: "100%",
-          backgroundColor: "#020617",
+          backgroundColor: "rgba(2, 6, 23, 0.75)",
+          backdropFilter: "blur(12px)",
           borderRadius: "16px",
           padding: "0 48px 32px 48px",
           boxShadow: "0 25px 50px -12px rgba(15,23,42,0.9)",
@@ -135,6 +132,29 @@ const HomePage = () => {
             variant="recruiter"
           />
         </div>
+
+        <section className="page-ui__card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+            <h2 style={{ margin: 0 }}>Việc làm nổi bật</h2>
+            <Link to={ROUTES.STUDENT_JOBS} className="page-ui__button page-ui__button--primary">
+              Khám phá tất cả jobs
+            </Link>
+          </div>
+          {featuredJobs.length === 0 ? (
+            <p className="page-ui__muted">Chưa có dữ liệu việc làm nổi bật.</p>
+          ) : (
+            <div className="page-ui__grid page-ui__grid--two-cols" style={{ marginTop: "12px" }}>
+              {featuredJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  detailPath={ROUTES.STUDENT_JOB_DETAIL.replace(":jobId", job._id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
       </div>
 
       {authMode && selectedRole && (
