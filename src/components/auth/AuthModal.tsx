@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import Login from './Login'
 import Register from './Register'
 
-type AuthMode = 'login' | 'register'
 
 type AuthModalProps = {
   mode: 'login' | 'register'
@@ -13,7 +13,7 @@ type AuthModalProps = {
 
 const CLOSE_ANIMATION_MS = 260
 
-const AuthModal = ({ mode,role, onClose, onSwitchMode }: AuthModalProps) => {
+const AuthModal = ({ mode, role, onClose, onSwitchMode }: AuthModalProps) => {
   const [isClosing, setIsClosing] = useState(false)
 
   const handleRequestClose = () => {
@@ -22,33 +22,46 @@ const AuthModal = ({ mode,role, onClose, onSwitchMode }: AuthModalProps) => {
     window.setTimeout(onClose, CLOSE_ANIMATION_MS)
   }
 
-  return (
+  const modalContent = (
     <div
       className={`auth-overlay${isClosing ? ' auth-overlay--closing' : ''}`}
       onClick={handleRequestClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(15, 23, 42, 0.75)',
+        backdropFilter: 'blur(14px)',
+      }}
     >
       <div
         className={`auth-modal-card${isClosing ? ' auth-modal-card--closing' : ''}`}
         onClick={(event) => event.stopPropagation()}
-        style={{ maxWidth: '520px', width: '100%' }}
+        style={{ maxWidth: '520px', width: '100%', position: 'relative' }}
       >
         {mode === 'login' ? (
-  <Login
-    asModal
-    role={role}
-    onSwitchToRegister={() => onSwitchMode('register')}
-  />
-) : (
-  <Register
-    asModal
-    onSwitchToLogin={() => onSwitchMode('login')}
-  />
-)}
+          <Login
+            asModal
+            role={role}
+            onSwitchToRegister={() => onSwitchMode('register')}
+          />
+        ) : (
+          <Register
+            asModal
+            onSwitchToLogin={() => onSwitchMode('login')}
+          />
+        )}
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }
 
 export default AuthModal
+
 
 
