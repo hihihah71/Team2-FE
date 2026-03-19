@@ -5,6 +5,7 @@ import {
   applyToJob,
   getMyApplicationsAndSavedJobs,
   rejectMyApplication,
+  acceptMyApplication,
 } from '../../features/applications/applicationsService'
 import { getMyCVs } from '../../features/cvs/cvsService'
 import { getJobById, saveJob, trackJobView, unsaveJob } from '../../features/jobs/jobsService'
@@ -169,6 +170,28 @@ const StudentJobDetailPage = () => {
     }
   }
 
+
+
+  // PASTE THIS HERE:
+  const handleAcceptMyApplication = async () => {
+  if (!myApplication) return;
+  if (!window.confirm('Bạn đồng ý chấp nhận lời mời làm việc này?')) return;
+
+  try {
+    setApplying(true);
+    const updated = await acceptMyApplication(myApplication._id); // now correctly typed
+    setMyApplication(updated); // update the local state
+    showToast('success', 'Chúc mừng! Bạn đã chấp nhận công việc.');
+  } catch (err: unknown) {
+    console.error('Accept failed', err);
+    let message = 'Không thể chấp nhận đơn ứng tuyển.';
+    if (err instanceof Error) message = err.message;
+    showToast('error', message);
+  } finally {
+    setApplying(false);
+  }
+};
+
   const handleToggleSave = async () => {
     if (!job) return
     try {
@@ -324,30 +347,46 @@ const StudentJobDetailPage = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
-          <button
-            onClick={handleOpenApplyModal}
-            disabled={applying || !canApply}
-            className="page-ui__btn page-ui__btn--primary"
-          >
-            {myApplyStatus === 'rejected' ? 'Nộp lại CV' : 'Nộp CV / Ứng tuyển'}
-          </button>
-          {myApplication && myApplication.status !== 'rejected' && (
-            <button
-              onClick={handleRejectMyApplication}
-              disabled={applying}
-              className="page-ui__btn page-ui__btn--danger"
-            >
-              {myApplication.status === 'offered' ? 'Từ chối offer' : 'Từ chối ứng tuyển'}
-            </button>
-          )}
-          <button
-            onClick={handleToggleSave}
-            disabled={saving}
-            className="page-ui__btn page-ui__btn--secondary"
-          >
-            {saving ? 'Đang xử lý...' : saved ? 'Bỏ lưu công việc' : 'Lưu công việc'}
-          </button>
-        </div>
+  <button
+    onClick={handleOpenApplyModal}
+    disabled={applying || !canApply}
+    className="page-ui__btn page-ui__btn--primary"
+  >
+    {myApplyStatus === 'rejected' ? 'Nộp lại CV' : 'Nộp CV / Ứng tuyển'}
+  </button>
+
+  {/* UPDATED SECTION START */}
+  {myApplication && myApplication.status !== 'rejected' && (
+    <>
+      {myApplication.status === 'offered' && (
+        <button
+          onClick={handleAcceptMyApplication}
+          disabled={applying}
+          className="page-ui__btn"
+          style={{ background: '#16a34a', color: 'white' }} // Green for Accept
+        >
+          Chấp nhận offer
+        </button>
+      )}
+      <button
+        onClick={handleRejectMyApplication}
+        disabled={applying}
+        className="page-ui__btn page-ui__btn--danger"
+      >
+        {myApplication.status === 'offered' ? 'Từ chối offer' : 'Từ chối ứng tuyển'}
+      </button>
+    </>
+  )}
+  {/* UPDATED SECTION END */}
+
+  <button
+    onClick={handleToggleSave}
+    disabled={saving}
+    className="page-ui__btn page-ui__btn--secondary"
+  >
+    {saving ? 'Đang xử lý...' : saved ? 'Bỏ lưu công việc' : 'Lưu công việc'}
+  </button>
+</div>
       </section>
       {isApplyModalOpen && (
         <div
@@ -493,5 +532,7 @@ const StudentJobDetailPage = () => {
     </div>
   )
 }
+
+
 
 export default StudentJobDetailPage

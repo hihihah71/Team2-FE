@@ -6,6 +6,7 @@ import type {
   ApplicationsMeResponse,
 } from '../../types/domain'
 
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const TOKEN_KEY = 'access_token'
 
@@ -24,11 +25,11 @@ function normalizeApplication(app: ApplicationItem): ApplicationItem {
   const cv =
     app.cvId && typeof app.cvId === 'object'
       ? { ...app.cvId, fileUrl: toAbsoluteFileUrl(app.cvId.fileUrl) }
-      : app.cvId
+      : app.cvId;
   return {
     ...app,
     cvId: cv,
-  }
+  };
 }
 
 export function getMyApplicationsAndSavedJobs() {
@@ -72,3 +73,8 @@ export function rejectMyApplication(applicationId: string) {
     normalizeApplication,
   )
 }
+
+export const acceptMyApplication = async (id: string): Promise<ApplicationItem> => {
+  const response = await apiPatch<ApplicationItem>(`/applications/${id}/accept`, {});
+  return normalizeApplication(response);
+};
