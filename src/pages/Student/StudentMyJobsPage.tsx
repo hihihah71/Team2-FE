@@ -1,4 +1,3 @@
-// Những bài đăng đã apply hoặc đã đánh dấu (lưu) - Người xin việc
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
@@ -24,18 +23,19 @@ const StudentMyJobsPage = () => {
 
     getMyApplicationsAndSavedJobs()
       .then((res) => {
-        if (cancelled) return
-        setData(res)
+        if (!cancelled) setData(res)
       })
       .catch((err: unknown) => {
-        if (cancelled) return
-        const message = err instanceof Error ? err.message : 'Không thể tải dữ liệu đơn ứng tuyển.'
-        setError(message)
+        if (!cancelled) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : 'Không thể tải dữ liệu đơn ứng tuyển.'
+          setError(message)
+        }
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false)
-        }
+        if (!cancelled) setLoading(false)
       })
 
     return () => {
@@ -45,11 +45,19 @@ const StudentMyJobsPage = () => {
 
   const filteredApplications = useMemo(() => {
     const items = data?.applications ?? []
+
     return items.filter((app) => {
       const job = typeof app.jobId === 'string' ? null : app.jobId
+
       const text = `${job?.title || ''} ${job?.company || ''} ${job?.location || ''}`.toLowerCase()
-      const passKeyword = keyword.trim() ? text.includes(keyword.trim().toLowerCase()) : true
-      const passStatus = statusFilter === 'all' ? true : app.status === statusFilter
+
+      const passKeyword = keyword.trim()
+        ? text.includes(keyword.trim().toLowerCase())
+        : true
+
+      const passStatus =
+        statusFilter === 'all' ? true : app.status === statusFilter
+
       return passKeyword && passStatus
     })
   }, [data?.applications, keyword, statusFilter])
@@ -62,18 +70,25 @@ const StudentMyJobsPage = () => {
           subtitle="Theo dõi tiến độ ứng tuyển bằng bộ lọc theo từ khóa và trạng thái."
         />
 
-        {error && (
-          <p className="page-ui__error">{error}</p>
-        )}
+        {error && <p className="page-ui__error">{error}</p>}
 
         <section className="student-myjobs-grid page-ui__card">
-          <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+          {/* FILTER */}
+          <div
+            style={{
+              gridColumn: '1 / -1',
+              display: 'grid',
+              gridTemplateColumns: '2fr 1fr',
+              gap: '10px'
+            }}
+          >
             <input
               className="page-ui__input"
               placeholder="Tìm theo vị trí, công ty, địa điểm"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
+
             <select
               className="page-ui__input"
               value={statusFilter}
@@ -87,20 +102,39 @@ const StudentMyJobsPage = () => {
               <option value="rejected">rejected</option>
             </select>
           </div>
-          <div className="student-myjobs-column" style={{ paddingRight: '8px' }}>
+
+          {/* LEFT COLUMN */}
+          <div
+            className="student-myjobs-column"
+            style={{ paddingRight: '8px' }}
+          >
             <h2>Đã ứng tuyển</h2>
             <StudentMyApplicationsSection
               applications={filteredApplications}
               loading={loading}
             />
           </div>
-          <div className="student-myjobs-column" style={{ paddingLeft: '8px' }}>
+
+          {/* RIGHT COLUMN */}
+          <div
+            className="student-myjobs-column"
+            style={{ paddingLeft: '8px' }}
+          >
             <h2>Đã lưu / Đánh dấu</h2>
-            <StudentSavedJobsSection jobs={data?.savedJobs ?? []} loading={loading} />
+            <StudentSavedJobsSection
+              jobs={data?.savedJobs ?? []}
+              loading={loading}
+            />
           </div>
         </section>
+
         <p style={{ marginTop: '16px' }}>
-          <Link to={ROUTES.STUDENT_DASHBOARD} className="page-ui__back-link">← Về trang tổng quan</Link>
+          <Link
+            to={ROUTES.STUDENT_DASHBOARD}
+            className="page-ui__back-link"
+          >
+            ← Về trang tổng quan
+          </Link>
         </p>
       </div>
     </div>

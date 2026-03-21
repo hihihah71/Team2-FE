@@ -2,6 +2,7 @@ import { API_ENDPOINTS } from '../../constants/api'
 import { apiDelete, apiGet, apiPost, apiPut } from '../../services/httpClient'
 import type { JobItem, JobsListResponse } from '../../types/domain'
 
+
 export type JobListQuery = {
   page?: number
   limit?: number
@@ -92,3 +93,10 @@ export function getJobStats(jobId: string) {
 export function trackJobView(jobId: string) {
   return apiPost<{ detailViewCount: number }>(API_ENDPOINTS.JOBS_TRACK_VIEW(jobId), {})
 }
+
+
+export const deleteMultipleJobs = async (ids: string[]) => {
+  return await apiPost<{ message: string }>('/jobs/bulk-delete', { 
+    jobIds: ids 
+  });
+};
