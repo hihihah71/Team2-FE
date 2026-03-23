@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { User, CheckCircle, XCircle } from 'lucide-react';
-import { ProfileFormData } from '../../../types/profile';
+import type { ProfileFormData } from '../../types/profile';
 
 // Optional: For Phase 4 we will integrate TipTap here. For now, regular textarea is used.
 interface Props {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Sparkles, X, Plus } from 'lucide-react';
-import { ProfileFormData } from '../../../types/profile';
+import { X, Plus } from 'lucide-react';
+import type { ProfileFormData } from '../../types/profile';
 
 interface Props {
     fieldName: 'skills' | 'languages';
@@ -13,7 +13,7 @@ interface Props {
 const levels = ['Cơ bản', 'Trung bình', 'Khá', 'Chuyên gia'];
 
 export const SkillsManager: React.FC<Props> = ({ fieldName, title, desc, icon }) => {
-    const { control, register } = useFormContext<ProfileFormData>();
+    const { control } = useFormContext<ProfileFormData>();
     const { fields, append, remove } = useFieldArray({
         control,
         name: fieldName

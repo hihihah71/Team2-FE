@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { apiGet } from '../services/httpClient'
 import { API_ENDPOINTS } from '../constants/api'
 
@@ -32,10 +25,6 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-
-  const setUser = useCallback((next: User | null) => {
-    setUserState(next)
-  }, [])
 
   const login = useCallback((token: string, userData: User) => {
     window.localStorage.setItem(TOKEN_KEY, token)

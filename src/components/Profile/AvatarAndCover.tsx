@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { Camera, Image as ImageIcon } from 'lucide-react';
-import { ROUTES } from '../../../constants/routes';
-import { ProfileFormData } from '../../../types/profile';
+import { ROUTES } from '../../constants/routes';
+import type { ProfileFormData } from '../../types/profile';
 
 interface Props {
     isRecruiter: boolean;
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const AvatarAndCover: React.FC<Props> = ({ isRecruiter, onShowToast }) => {
-    const { register, watch, setValue } = useFormContext<ProfileFormData>();
+    const { watch, setValue } = useFormContext<ProfileFormData>();
 
     const coverUrl = watch('personalInfo.coverUrl');
     const avatarUrl = watch('personalInfo.avatarUrl');
