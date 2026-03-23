@@ -371,8 +371,6 @@ const ProfilePage = () => {
     }
   }
 
-  const handleChangePassword = () => showToast('Đổi mật khẩu thành công!')
-
   const handleCancelCompany = () => showToast('Đã hủy các thay đổi ở hồ sơ công ty.')
 
   const handleUpdateCompany = () => {

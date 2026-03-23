@@ -1,7 +1,5 @@
 import React from 'react';
 import './ProfileView.css';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '../../constants/routes';
 
 interface ProfileViewProps {
     personalInfo: any;
