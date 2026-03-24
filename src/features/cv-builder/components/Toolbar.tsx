@@ -3,7 +3,7 @@ import { useCVStore, type CVTemplateType } from '../store/cvStore'
 import {
   Download, Image as ImageIcon, Palette, Type, LayoutTemplate, ListOrdered,
   Copy, FileImage, Monitor, FileText, Share2, ToggleLeft, ToggleRight,
-  Plus, AlignJustify, AlignCenter, AlignLeft, Trash2, Save, ChevronDown,
+  Plus, AlignJustify, Trash2, Save, ChevronDown,
   Sparkles, PlusCircle, Edit2
 } from 'lucide-react'
 import { SortableSectionList } from './SortableSectionList'
@@ -21,17 +21,6 @@ interface ToolbarProps {
   isSaving: boolean
   myCvs: any[]
 }
-
-const THEME_PRESETS = [
-  { name: 'Ocean', value: '#2563eb' },
-  { name: 'Forest', value: '#16a34a' },
-  { name: 'Rose', value: '#e11d48' },
-  { name: 'Violet', value: '#7c3aed' },
-  { name: 'Amber', value: '#d97706' },
-  { name: 'Slate', value: '#475569' },
-  { name: 'Teal', value: '#0d9488' },
-  { name: 'Pink', value: '#db2777' },
-]
 
 const FONT_OPTIONS = [
   { label: 'Be Vietnam Pro (Khuyên dùng)', value: '"Be Vietnam Pro", sans-serif' },
@@ -56,8 +45,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     appMode, setAppMode,
     isPublic, setIsPublic,
     slug, setSlug,
-    hiddenSections, toggleHideSection,
-    customSections, removeCustomSection,
     isSaving, myCvs, cvId, cvName, setCvName
   } = useCVStore()
 

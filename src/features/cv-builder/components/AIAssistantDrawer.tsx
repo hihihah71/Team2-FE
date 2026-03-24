@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useCVStore } from '../store/cvStore'
-import { X, Sparkles, Send, Check, RefreshCw, Languages, Zap, FileText, AlertTriangle, Target, HelpCircle, Lightbulb, BookOpen } from 'lucide-react'
+import { X, Sparkles, Send, RefreshCw, Languages, Zap, FileText, AlertTriangle, Target } from 'lucide-react'
 import { apiPost } from '../../../services/httpClient'
 import { API_ENDPOINTS } from '../../../constants/api'
 

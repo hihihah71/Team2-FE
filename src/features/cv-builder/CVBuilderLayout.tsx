@@ -23,7 +23,7 @@ export const CVBuilderLayout: React.FC<CVBuilderLayoutProps> = ({ onClose, onSav
     templateId, setProfile, loadCvData, setCvId, setSlug, setIsPublic, setAppMode,
     cvId, slug, isPublic, profile, themeColor, fontFamily, spacing, sectionsOrder,
     avatarUrl, appMode, hiddenSections, hiddenItems, customSections,
-    setIsSaving, isSaving, setMyCvs, myCvs, cvName, setCvName
+    setIsSaving, isSaving, setMyCvs, myCvs, setCvName
   } = useCVStore()
   
   const cvPreviewRef = useRef<HTMLDivElement>(null)

@@ -5,7 +5,11 @@ import { useCVStore } from '../store/cvStore'
 interface SectionWrapperProps {
   sectionId: string
   children: React.ReactNode
+  /** Alias cho `label` — template dùng `title` */
   label?: string
+  title?: string
+  /** Dùng khi bọc từng dòng trong section lặp (kinh nghiệm, học vấn, …) */
+  itemIndex?: number
   isDragging?: boolean
   dragHandleProps?: Record<string, any>
 }
@@ -14,11 +18,13 @@ export const SectionWrapper: React.FC<SectionWrapperProps> = ({
   sectionId,
   children,
   label,
+  title,
   isDragging,
   dragHandleProps,
 }) => {
   const { hiddenSections, toggleHideSection, isReadOnly, appMode } = useCVStore()
   const isHidden = hiddenSections.includes(sectionId)
+  const displayLabel = label ?? title
 
   // In read-only or PDF export: don't render hidden sections at all
   if (isHidden && (isReadOnly || appMode === 'pdf')) return null
@@ -105,7 +111,7 @@ export const SectionWrapper: React.FC<SectionWrapperProps> = ({
           borderRadius: '6px',
           marginBottom: '4px'
         }}>
-          🙈 Mục "{label}" đang bị ẩn — sẽ không xuất hiện trong PDF/Public
+          🙈 Mục "{displayLabel ?? sectionId}" đang bị ẩn — sẽ không xuất hiện trong PDF/Public
         </div>
       )}
 

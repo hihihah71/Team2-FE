@@ -215,7 +215,15 @@ const StudentJobDetailPage = () => {
   }
 
   if (loading) return <div className="page-ui"><div className="page-ui__container"><p className="page-ui__muted">Đang tải...</p></div></div>
-  if (!job) return <div className="page-ui"><div className="page-ui__container"><p className="page-ui__muted">Không tìm thấy công việc</p></div></div>
+  if (!job) {
+    return (
+      <div className="page-ui">
+        <div className="page-ui__container">
+          <p className="page-ui__muted">{error || 'Không tìm thấy công việc'}</p>
+        </div>
+      </div>
+    )
+  }
 
   const canApply = !myApplication || myApplication.status === 'rejected'
   const myApplyStatus = myApplication?.status
