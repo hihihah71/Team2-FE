@@ -50,6 +50,11 @@ export type CvItem = {
   fileMimeType?: string
   fileSize?: number
   isDefault?: boolean
+  cvData?: any
+  slug?: string
+  isPublic?: boolean
+  viewCount?: number
+  parentCvId?: string
   createdAt?: string
   updatedAt?: string
 }

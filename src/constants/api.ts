@@ -30,8 +30,16 @@ export const API_ENDPOINTS = {
   // CVs (student)
   CVS_ME: '/cvs/me',
   CVS_CREATE: '/cvs',
+  CVS_PUBLIC: (slug: string) => `/cvs/public/${slug}`,
+  CVS_CLONE_VERSION: (id: string) => `/cvs/${id}/versions`,
   CVS_UPDATE: (id: string) => `/cvs/${id}`,
   CVS_DELETE: (id: string) => `/cvs/${id}`,
+
+  // AI
+  AI_OPTIMIZE: '/ai/optimize',
+  AI_ANALYZE_JOB: '/ai/analyze-job',
+  AI_TAILOR: '/ai/tailor',
+  AI_INTERVIEW_PREP: '/ai/interview-prep',
 
   // Profile (student & recruiter)
   PROFILE_ME: '/profile/me',

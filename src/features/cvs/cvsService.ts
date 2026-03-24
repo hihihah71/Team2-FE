@@ -58,8 +58,20 @@ export async function uploadPdfCv(file: File, payload?: { name?: string; isDefau
   return normalizeCv(created)
 }
 
-export function updateCv(cvId: string, payload: Partial<CvItem>) {
+export function updateCv(cvId: string, payload: Partial<CvItem> & { fileDataBase64?: string; name?: string }) {
   return apiPut<CvItem>(API_ENDPOINTS.CVS_UPDATE(cvId), payload).then(normalizeCv)
+}
+
+export function cloneCvVersion(cvId: string, newName?: string) {
+  return apiPost<CvItem>(API_ENDPOINTS.CVS_CLONE_VERSION(cvId), { newName }).then(normalizeCv)
+}
+
+export function getPublicCv(slug: string) {
+  return apiGet<CvItem>(API_ENDPOINTS.CVS_PUBLIC(slug)).then(normalizeCv)
+}
+
+export function optimizeText(text: string, type: 'summary' | 'experience' | 'skills' = 'summary') {
+  return apiPost<{ optimizedText: string }>(API_ENDPOINTS.AI_OPTIMIZE, { text, type })
 }
 
 export function deleteCv(cvId: string) {

@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext'
 const HomePage = lazy(() => import('../pages/Common/HomePage'))
 const ProfilePage = lazy(() => import('../pages/Common/ProfilePage'))
 const NotificationsPage = lazy(() => import('../pages/Common/NotificationsPage'))
+const PublicCVPage = lazy(() => import('../pages/Common/PublicCVPage'))
 
 // Student
 const StudentDashboardPage = lazy(() => import('../pages/Student/StudentDashboardPage'))
@@ -74,6 +75,7 @@ export function AppRoutes() {
       <Routes>
         {/* Common — không qua layout */}
         <Route path={ROUTES.HOME} element={<HomePage />} />
+        <Route path="/public/cv/:slug" element={<PublicCVPage />} />
 
         {/* Student — nested under /student, bảo vệ: chỉ role student */}
         <Route

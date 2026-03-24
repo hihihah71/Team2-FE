@@ -5,8 +5,7 @@ import StudentCVList from '../../components/student/StudentCVList'
 import { deleteCv, getMyCVs, updateCv, uploadPdfCv } from '../../features/cvs/cvsService'
 import type { CvItem } from '../../types/domain'
 import { PageHeader } from '../../components/common/PageHeader'
-import { getMyProfile } from '../../features/profile/profileService'
-import { buildProfilePdfFile } from '../../features/cvs/profilePdf'
+import { CVBuilderLayout } from '../../features/cv-builder/CVBuilderLayout'
 import './StudentCVPage.css'
 import '../PageUI.css'
 
@@ -20,6 +19,10 @@ const StudentCVPage = () => {
   const [creating, setCreating] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Advanced CV builder
+  const [showBuilder, setShowBuilder] = useState(false)
+  const [editingCv, setEditingCv] = useState<CvItem | undefined>(undefined)
 
   useEffect(() => {
     let cancelled = false
@@ -75,22 +78,6 @@ const StudentCVPage = () => {
     if (file) handleFileSelect(file)
   }
 
-  const handleGenerateProfileCv = async () => {
-    try {
-      setCreating(true)
-      const profile = await getMyProfile()
-      const pdfFile = buildProfilePdfFile(profile, 'CV_Profile_Auto.pdf')
-      setSelectedFile(pdfFile)
-      setNewCvName('CV tự động từ Profile')
-      setError(null)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Không thể tạo CV từ profile.'
-      setError(message)
-    } finally {
-      setCreating(false)
-    }
-  }
-
   const handleCreateCv = async () => {
     if (!selectedFile) {
       setError('Vui lòng chọn file PDF trước khi upload.')
@@ -144,7 +131,7 @@ const StudentCVPage = () => {
       <div className="page-ui__container">
         <PageHeader
           title="Quản lý CV"
-          subtitle="Upload PDF hoặc tạo CV tự động từ Profile, có preview trước khi lưu."
+          subtitle="Upload PDF hoặc tạo CV bằng Advanced Builder với nhiều mẫu thiết kế chuyên nghiệp."
         />
 
         {error && <p className="page-ui__error">{error}</p>}
@@ -157,7 +144,7 @@ const StudentCVPage = () => {
           </h3>
 
           <div className="cv-upload__name-row">
-            <label className="cv-upload__label">Tên hiển thị</label>
+            <label className="cv-upload__label">Tên hiển thị (Nếu tự Tải lên)</label>
             <input
               type="text"
               placeholder="Ví dụ: CV Frontend Developer 2026"
@@ -204,7 +191,7 @@ const StudentCVPage = () => {
                 <p className="cv-upload__dropzone-text">
                   Kéo thả file PDF vào đây hoặc <span>nhấn để chọn file</span>
                 </p>
-                <p className="cv-upload__dropzone-hint">Chỉ hỗ trợ file PDF, tối đa 10MB</p>
+                <p className="cv-upload__dropzone-hint">Chỉ hỗ trợ file PDF tự upload, tối đa 10MB</p>
               </>
             )}
           </div>
@@ -220,7 +207,7 @@ const StudentCVPage = () => {
             </div>
           )}
 
-          <div className="cv-upload__actions">
+          <div className="cv-upload__actions" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <button
               type="button"
               onClick={handleCreateCv}
@@ -228,16 +215,25 @@ const StudentCVPage = () => {
               className="page-ui__btn page-ui__btn--primary"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              {creating ? 'Đang upload...' : 'Upload & Lưu CV'}
+              {creating ? 'Đang upload...' : 'Lưu File Upload'}
             </button>
+            
+            <div style={{ height: '30px', width: '1px', backgroundColor: '#e2e8f0' }}></div>
+            
             <button
               type="button"
-              onClick={handleGenerateProfileCv}
-              disabled={creating}
-              className="page-ui__btn page-ui__btn--success"
+              onClick={() => {
+                setEditingCv(undefined)
+                setShowBuilder(true)
+              }}
+              className="page-ui__btn"
+              style={{
+                background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                color: 'white', border: 'none', boxShadow: '0 4px 6px rgba(79, 70, 229, 0.25)'
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              Tạo CV từ Profile
+              Tạo CV (Bản Đẹp Nâng Cao)
             </button>
           </div>
         </section>
@@ -253,12 +249,40 @@ const StudentCVPage = () => {
             loading={loading}
             onSetDefault={handleSetDefault}
             onDelete={handleDelete}
+            onEdit={(cv) => {
+              setEditingCv(cv)
+              setShowBuilder(true)
+            }}
           />
         </section>
 
         <p style={{ marginTop: '16px' }}>
           <Link to={ROUTES.STUDENT_DASHBOARD} className="page-ui__back-link">← Về trang tổng quan</Link>
         </p>
+
+        {/* The Advanced CV Builder Overlay */}
+        {showBuilder && (
+          <CVBuilderLayout 
+            initialCv={editingCv}
+            onClose={() => {
+              setShowBuilder(false)
+              setEditingCv(undefined)
+            }}
+            onSaved={(newCv) => {
+              if (newCv) {
+                // Determine if it was an update or create
+                setCvs(prev => {
+                  const exists = prev.find(c => c._id === newCv._id)
+                  if (exists) {
+                    return prev.map(c => c._id === newCv._id ? newCv : c)
+                  }
+                  return [newCv, ...prev]
+                })
+              }
+            }}
+            cvsCount={cvs.length}
+          />
+        )}
       </div>
     </div>
   )
