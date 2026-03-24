@@ -6,6 +6,7 @@ import type {
   ApplicationsMeResponse,
 } from '../../types/domain'
 
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const TOKEN_KEY = 'access_token'
 
@@ -61,14 +62,48 @@ export function getApplicantByJob(jobId: string, applicantId: string) {
   ).then(normalizeApplication)
 }
 
-export function updateApplicationStatus(applicationId: string, status: ApplicationStatus) {
-  return apiPatch<ApplicationItem>(API_ENDPOINTS.APPLICATIONS_UPDATE_STATUS(applicationId), {
+export const updateApplicationStatus = async (
+  id: string,
+  status: ApplicationStatus,
+  metadata?: any 
+) => {
+  // Sửa dòng dưới đây để dùng đường dẫn trực tiếp
+  return apiPatch<ApplicationItem>(`/applications/${id}`, {
     status,
-  }).then(normalizeApplication)
-}
+    ...metadata // Chứa interviewDate để gửi lên Backend
+  }).then(normalizeApplication);
+};
 
 export function rejectMyApplication(applicationId: string) {
   return apiPatch<ApplicationItem>(API_ENDPOINTS.APPLICATIONS_REJECT_SELF(applicationId), {}).then(
     normalizeApplication,
   )
+}
+
+
+export function acceptOffer(applicationId: string) {
+  return apiPatch<ApplicationItem>(
+    `/applications/${applicationId}/accept-offer`,
+    {}
+  ).then(normalizeApplication)
+}
+
+export function refuseOffer(applicationId: string) {
+  return apiPatch<ApplicationItem>(
+    `/applications/${applicationId}/refuse-offer`,
+    {}
+  ).then(normalizeApplication)
+}
+
+
+export async function bulkUpdateApplicationStatus(applicationIds: string[], status: ApplicationStatus) {
+  // Đăng Vũ cần tạo endpoint này ở Backend: PATCH /applications/bulk-status
+  return apiPatch<ApplicationItem[]>(`/applications/bulk-status`, {
+    applicationIds,
+    status,
+  }).then(items => Array.isArray(items) ? items.map(normalizeApplication) : []);
+}
+
+export const acceptInterview = async (id: string) => {
+  return apiPatch<ApplicationItem>(`/applications/${id}/accept-interview`, {}).then(normalizeApplication)
 }

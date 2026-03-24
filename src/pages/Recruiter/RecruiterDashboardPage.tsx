@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+// 1. Added Recharts imports
 import { ROUTES } from '../../constants/routes'
 import { getRecruiterDashboardStats } from '../../features/dashboard/dashboardService'
 import { getJobs } from '../../features/jobs/jobsService'
@@ -11,7 +12,11 @@ import { Pagination } from '../../components/common/Pagination'
 import './RecruiterDashboardPage.css'
 import '../PageUI.css'
 
+// 2. Helper Component for the Trend Chart
+// Helper Component for the Trend Chart
+
 const RecruiterDashboardPage = () => {
+  const navigate = useNavigate()
   const [stats, setStats] = useState<RecruiterDashboardStats | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recentJobs, setRecentJobs] = useState<JobItem[]>([])
@@ -44,7 +49,7 @@ const RecruiterDashboardPage = () => {
     <div className="page-ui">
       <div className="page-ui__container">
         <PageHeader
-          title="Xin chào, nhà tuyển dụng 👋"
+          title="Xin chào, nhà tuyển dụng "
           subtitle="Theo dõi hiệu suất tuyển dụng và xử lý ứng viên nhanh hơn."
         />
 
@@ -60,6 +65,9 @@ const RecruiterDashboardPage = () => {
           />
           <StatsCard label="Đơn mới hôm nay" value={stats ? stats.todayApplications : '—'} accent="green" />
         </section>
+
+        {/* 3. Integrated Chart Section */}
+
 
         <section className="page-ui__card" style={{ marginBottom: '24px' }}>
           <h2 style={{ marginTop: 0 }}>Lối tắt tuyển dụng</h2>
@@ -92,20 +100,40 @@ const RecruiterDashboardPage = () => {
           {jobsLoading ? (
             <p className="page-ui__muted">Đang tải danh sách việc làm...</p>
           ) : pagedJobs.length === 0 ? (
-            <p className="page-ui__muted">Hiện chưa có công việc nào được đăng trên nền tảng.</p>
-          ) : (
-            <div className="page-ui__grid page-ui__grid--two-cols">
-              {pagedJobs.map((job) => (
-                <JobCard
-                  key={job._id}
-                  job={job}
-                  detailPath={ROUTES.RECRUITER_BROWSE_JOB_DETAIL.replace(':jobId', job._id)}
-                />
-              ))}
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '48px 24px', 
+              background: '#0f172a', 
+              borderRadius: '12px', 
+              border: '1px dashed #334155',
+              marginTop: '10px'
+            }}>
+              <p style={{ color: '#9ca3af', marginBottom: '18px', fontSize: '14px' }}>
+                Bạn chưa có bài đăng tuyển dụng nào trên nền tảng.
+              </p>
+              {/* Using navigate for the button you liked */}
+              <button 
+                onClick={() => navigate(ROUTES.RECRUITER_JOB_CREATE)} 
+                className="page-ui__button page-ui__button--secondary" 
+                style={{ fontSize: '13px' }}
+              >
+                Đăng tin đầu tiên ngay
+              </button>
             </div>
+          ) : (
+            <>
+              <div className="page-ui__grid page-ui__grid--two-cols">
+                {pagedJobs.map((job) => (
+                  <JobCard
+                    key={job._id}
+                    job={job}
+                    detailPath={ROUTES.RECRUITER_BROWSE_JOB_DETAIL.replace(':jobId', job._id)}
+                  />
+                ))}
+              </div>
+              <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+            </>
           )}
-
-          <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
         </section>
       </div>
     </div>

@@ -6231,7 +6231,7 @@ function DefaultErrorComponent() {
       "Error handled by React Router default ErrorBoundary:",
       error
     );
-    devInfo = React2.createElement(React2.Fragment, null, React2.createElement("p", null, "💿 Hey developer 👋"), React2.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", React2.createElement("code", { style: codeStyles }, "ErrorBoundary"), " or", " ", React2.createElement("code", { style: codeStyles }, "errorElement"), " prop on your route."));
+    devInfo = React2.createElement(React2.Fragment, null, React2.createElement("p", null, "💿 Hey developer "), React2.createElement("p", null, "You can provide a way better UX than this when your app throws errors by providing your own ", React2.createElement("code", { style: codeStyles }, "ErrorBoundary"), " or", " ", React2.createElement("code", { style: codeStyles }, "errorElement"), " prop on your route."));
   }
   return React2.createElement(React2.Fragment, null, React2.createElement("h2", null, "Unexpected Application Error!"), React2.createElement("h3", { style: { fontStyle: "italic" } }, message), stack ? React2.createElement("pre", { style: preStyles }, stack) : null, devInfo);
 }
