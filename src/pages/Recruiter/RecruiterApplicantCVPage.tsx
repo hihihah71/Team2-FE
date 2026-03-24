@@ -1,4 +1,4 @@
-// Xem chi tiết CV của ứng viên đã apply vào bài đăng
+// RecruiterApplicantCVPage.tsx
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
@@ -11,13 +11,14 @@ import { PageHeader } from '../../components/common/PageHeader'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import '../PageUI.css'
 
-const ALLOWED_TRANSITIONS: Record<ApplicationStatus, ApplicationStatus[]> = {
+const ALLOWED_TRANSITIONS: Record<string, string[]> = { 
   pending: ['shortlisted', 'interview', 'rejected'],
   shortlisted: ['interview', 'offered', 'rejected'],
-  interview: ['offered', 'rejected'],
+  interview: ['interview_accepted', 'rejected'],
+  interview_accepted: ['offered', 'rejected'],  
   rejected: [],
   offered: [],
-}
+};
 
 const RecruiterApplicantCVPage = () => {
   const { jobId, applicantId } = useParams<{ jobId: string; applicantId: string }>()
@@ -29,6 +30,10 @@ const RecruiterApplicantCVPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [updating, setUpdating] = useState(false)
   const [showProfileCvDetails, setShowProfileCvDetails] = useState(false)
+
+  // --- PHẦN MỚI THÊM: State cho phỏng vấn ---
+  const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
+  const [interviewTime, setInterviewTime] = useState('');
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -49,23 +54,33 @@ const RecruiterApplicantCVPage = () => {
         setLoading(false)
       }
     }
-
     fetchDetail()
   }, [jobId, applicantId])
 
-  const updateStatus = async (status: ApplicationStatus) => {
-    if (!appDetail) return
-    setUpdating(true)
-    try {
-      const updated = await updateApplicationStatus(appDetail._id, status)
-      setAppDetail(updated)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Không thể cập nhật trạng thái.'
-      setError(message)
-    } finally {
-      setUpdating(false)
-    }
+  // --- PHẦN QUAN TRỌNG: Đã đưa vào trong Scope để hết lỗi ---
+// Cập nhật hàm updateStatus để nhận thêm tham số phụ (metadata)
+const updateStatus = async (status: ApplicationStatus, metadata?: any) => {
+  if (!appDetail) return;
+  setUpdating(true);
+  try {
+    const updated = await updateApplicationStatus(appDetail._id, status, metadata);
+    setAppDetail(updated);
+  } catch (err: unknown) {
+    setError('Không thể cập nhật trạng thái.');
+  } finally {
+    setUpdating(false);
   }
+};
+
+const handleProposeInterview = async () => {
+  if (!interviewTime) return alert("Vui lòng chọn thời gian!");
+    console.log("INTERVIEW TIME =", interviewTime);  // 👈 ADD THIS LINE
+
+    await updateStatus('interview', { interviewDate: interviewTime }); 
+  
+  setIsInterviewModalOpen(false);
+  alert(`Đã gửi lời mời phỏng vấn vào lúc: ${interviewTime}`);
+};
 
   const isTransitionAllowed = (status: ApplicationStatus) => {
     if (!appDetail) return false
@@ -78,7 +93,7 @@ const RecruiterApplicantCVPage = () => {
       <div className="page-ui__container">
       <PageHeader
         title={`CV ứng viên ${(appDetail?.applicantId as UserSummary | undefined)?.fullName || `#${applicantId}`}`}
-        subtitle={`Bài đăng: ${job?.title || `#${jobId}`} — Xem chi tiết CV, thông tin liên hệ, cập nhật trạng thái đơn ứng tuyển.`}
+subtitle={`Bài đăng: ${job?.title || `#${jobId}`} — Xem chi tiết CV, thông tin liên hệ, cập nhật trạng thái đơn ứng tuyển.`}
         backTo={backUrl}
         backLabel="Quay lại danh sách ứng viên"
       />
@@ -141,7 +156,7 @@ const RecruiterApplicantCVPage = () => {
                 </p>
                 {appDetail.profileCvSnapshot.phone && (
                   <p style={{ fontSize: '13px', color: '#9ca3af' }}>
-                    SĐT: {appDetail.profileCvSnapshot.phone}
+SĐT: {appDetail.profileCvSnapshot.phone}
                   </p>
                 )}
                 {appDetail.profileCvSnapshot.summary && (
@@ -195,7 +210,7 @@ const RecruiterApplicantCVPage = () => {
               <button
                 type="button"
                 className="page-ui__btn page-ui__btn--primary"
-                onClick={() => updateStatus('interview')}
+                onClick={() => setIsInterviewModalOpen(true)}
                 disabled={updating || !isTransitionAllowed('interview')}
               >
                 📋 Mời phỏng vấn
@@ -214,15 +229,36 @@ const RecruiterApplicantCVPage = () => {
                 onClick={() => updateStatus('offered')}
                 disabled={updating || !isTransitionAllowed('offered')}
               >
-                🎉 Gửi offer
+                Gửi offer
               </button>
             </div>
-            <p className="page-ui__muted" style={{ marginTop: '8px' }}>
+<p className="page-ui__muted" style={{ marginTop: '8px' }}>
               Hệ thống chỉ cho phép chuyển sang trạng thái hợp lệ theo pipeline tuyển dụng.
             </p>
           </>
         )}
       </section>
+
+      {/* --- PHẦN MỚI THÊM: Modal Lên lịch phỏng vấn --- */}
+      {isInterviewModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="page-ui__card" style={{ width: '400px', border: '1px solid #334155' }}>
+            <h3 style={{ marginBottom: '10px' }}>Lên lịch phỏng vấn</h3>
+            <p style={{ fontSize: '14px', marginBottom: '10px', color: '#9ca3af' }}>Chọn thời gian đề xuất cho ứng viên:</p>
+            <input 
+              type="datetime-local" 
+              className="page-ui__input"
+              style={{ width: '100%', marginBottom: '15px', padding: '10px', borderRadius: '4px', background: '#1e293b', color: 'white', border: '1px solid #475569' }}
+              onChange={(e) => setInterviewTime(e.target.value)}
+            />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setIsInterviewModalOpen(false)} className="page-ui__btn page-ui__btn--secondary">Hủy</button>
+              <button onClick={handleProposeInterview} className="page-ui__btn page-ui__btn--primary">Gửi lời mời</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showProfileCvDetails && appDetail?.profileCvSnapshot && (
         <div
           role="dialog"
@@ -287,7 +323,7 @@ const RecruiterApplicantCVPage = () => {
                       return (
                         <li key={`exp-${idx}`}>
                           {(item.title as string) || 'Vị trí'} - {(item.company as string) || 'Công ty'}
-                        </li>
+</li>
                       )
                     })}
                   </ul>
