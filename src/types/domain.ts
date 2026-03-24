@@ -7,6 +7,7 @@ export type ApplicationStatus =
   | 'interview'
   | 'rejected'
   | 'offered'
+  | 'interview_accepted'
 
 export type UserSummary = {
   _id: string
@@ -50,6 +51,11 @@ export type CvItem = {
   fileMimeType?: string
   fileSize?: number
   isDefault?: boolean
+  cvData?: any
+  slug?: string
+  isPublic?: boolean
+  viewCount?: number
+  parentCvId?: string
   createdAt?: string
   updatedAt?: string
 }
@@ -78,7 +84,7 @@ export type ApplicationItem = {
   cvId?: string | CvItem | null
   status: ApplicationStatus
   coverLetter?: string
-  createdAt?: string
+  interviewDate?: string 
   updatedAt?: string
 }
 
@@ -87,13 +93,19 @@ export type ApplicationsMeResponse = {
   savedJobs: JobItem[]
 }
 
-export type StudentDashboardStats = {
-  totalApplications: number
-  shortlisted: number
-  interviews: number
-  savedJobs: number
-  cvsCount: number
-  defaultCvName: string | null
+export interface StudentDashboardStats {
+  totalApplications: number;
+  shortlisted: number;
+  savedJobs: number;
+  interviews: number; // Đã thêm dòng này để hiện số ở thẻ KPI
+  defaultCvName: string | null;
+  upcomingInterviews: {
+    _id: string;
+    jobId: string;
+    jobTitle: string;
+    company: string;
+    interviewDate: string; // Đây là ngày giờ từ Recruiter
+  }[];
 }
 
 export type RecruiterDashboardStats = {

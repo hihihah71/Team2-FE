@@ -4,6 +4,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { Footer } from '../components/common/Footer'
 import { NotificationBell } from '../components/common/NotificationBell'
 import { useScrollToTopOnDrillDown } from '../hooks/useScrollToTopOnDrillDown'
+import { Sparkles } from 'lucide-react'
+import { AIAssistantDrawer } from '../features/cv-builder/components/AIAssistantDrawer'
+import { useCVStore } from '../features/cv-builder/store/cvStore'
 import type { NotificationItem } from '../types/domain'
 
 const navItems = [
@@ -124,6 +127,37 @@ const StudentLayout = () => {
         <Outlet />
       </main>
       <Footer />
+
+      {/* Global AI Assistant FAB */}
+      <style>{`
+        @keyframes ai-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+          70% { box-shadow: 0 0 0 15px rgba(139, 92, 246, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        .ai-fab-global {
+          position: fixed; bottom: 30px; right: 30px; z-index: 99999;
+          background: linear-gradient(135deg, #8b5cf6, #d946ef);
+          color: white; border: none; border-radius: 50px;
+          padding: 14px 28px; font-weight: 800; cursor: pointer;
+          display: flex; align-items: center; gap: 10px;
+          box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5), inset 0 1px 1px rgba(255,255,255,0.3);
+          animation: ai-pulse 2s infinite;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .ai-fab-global:hover { transform: scale(1.1) translateY(-5px); filter: brightness(1.15); }
+      `}</style>
+
+      <button 
+        className="ai-fab-global" 
+        onClick={() => useCVStore.getState().setAiDrawer({ isOpen: true })}
+      >
+        <Sparkles size={18} fill="white" />
+        Trợ lý AI Career
+      </button>
+
+      <AIAssistantDrawer />
     </div>
   )
 }
