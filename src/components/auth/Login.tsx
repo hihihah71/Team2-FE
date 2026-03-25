@@ -45,26 +45,43 @@ const Login = ({
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>(initialRole)
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<{
+    email?: string
+    password?: string
+    general?: string
+  }>({})
+
+  const validate = () => {
+    const newErrors: typeof errors = {}
+    if (!email.trim()) {
+      newErrors.email = 'Vui lòng nhập email.'
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        newErrors.email = 'Vui lòng nhập email đúng định dạng.'
+      }
+    }
+    if (!password) {
+      newErrors.password = 'Vui lòng nhập mật khẩu.'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
 
-    if (!email || !password) {
-      window.alert('Vui lòng nhập đủ email và mật khẩu.')
-      return
-    }
+    if (!validate()) return
 
     try {
       setLoading(true)
+      setErrors({})
 
-      const data = await apiPost<LoginResponse>(
-        API_ENDPOINTS.AUTH_LOGIN,
-        {
-          email,
-          password,
-          role,
-        }
-      )
+      const data = await apiPost<LoginResponse>(API_ENDPOINTS.AUTH_LOGIN, {
+        email,
+        password,
+        role,
+      })
 
       login(data.token, data.user)
 
@@ -76,7 +93,7 @@ const Login = ({
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Đăng nhập thất bại.'
-      window.alert(message)
+      setErrors({ general: message })
     } finally {
       setLoading(false)
     }
@@ -201,7 +218,11 @@ const Login = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }}>
+        <form 
+          onSubmit={handleSubmit} 
+          style={{ display: 'grid', gap: '14px' }} 
+          noValidate
+        >
           <div style={{ display: 'grid', gap: '6px' }}>
             <label
               htmlFor="email"
@@ -212,19 +233,26 @@ const Login = ({
 
             <input
               id="email"
-              type="email"
+              type="text"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value)
+                if (errors.email) setErrors({ ...errors, email: undefined })
+              }}
               placeholder="example@student.edu.vn"
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
-                border: '1px solid rgba(55,65,81,1)',
+                border: errors.email ? '1px solid #ef4444' : '1px solid rgba(55,65,81,1)',
                 backgroundColor: '#020617',
                 color: '#e5e7eb',
                 fontSize: '14px',
+                outline: 'none',
               }}
             />
+            {errors.email && (
+              <span style={{ color: '#ef4444', fontSize: '12px' }}>{errors.email}</span>
+            )}
           </div>
 
           <div style={{ display: 'grid', gap: '6px' }}>
@@ -239,17 +267,24 @@ const Login = ({
               id="password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                if (errors.password) setErrors({ ...errors, password: undefined })
+              }}
               placeholder="••••••••"
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
-                border: '1px solid rgba(55,65,81,1)',
+                border: errors.password ? '1px solid #ef4444' : '1px solid rgba(55,65,81,1)',
                 backgroundColor: '#020617',
                 color: '#e5e7eb',
                 fontSize: '14px',
+                outline: 'none',
               }}
             />
+            {errors.password && (
+              <span style={{ color: '#ef4444', fontSize: '12px' }}>{errors.password}</span>
+            )}
           </div>
 
           <p
@@ -290,6 +325,12 @@ const Login = ({
               </Link>
             )}
           </p>
+
+          {errors.general && (
+            <div style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center' }}>
+              {errors.general}
+            </div>
+          )}
 
           <button
             type="submit"

@@ -28,17 +28,41 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>('student')
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<{
+    fullName?: string
+    email?: string
+    password?: string
+    general?: string
+  }>({})
+
+  const validate = () => {
+    const newErrors: typeof errors = {}
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Vui lòng nhập họ và tên.'
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email.trim()) {
+      newErrors.email = 'Vui lòng nhập email.'
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = 'Vui lòng nhập email đúng định dạng.'
+    }
+    if (!password) {
+      newErrors.password = 'Vui lòng nhập mật khẩu.'
+    } else if (password.length < 6) {
+      newErrors.password = 'Mật khẩu cần có ít nhất 6 ký tự.'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
 
-    if (!fullName || !email || !password) {
-      window.alert('Vui lòng nhập đầy đủ họ tên, email và mật khẩu.')
-      return
-    }
+    if (!validate()) return
 
     try {
       setLoading(true)
+      setErrors({})
 
       await apiPost<RegisterResponse>(API_ENDPOINTS.AUTH_REGISTER, {
         fullName,
@@ -52,7 +76,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Đăng ký thất bại.'
-      window.alert(message)
+      setErrors({ general: message })
     } finally {
       setLoading(false)
     }
@@ -65,13 +89,13 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
         asModal
           ? {}
           : {
-              minHeight: '100vh',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'radial-gradient(circle at top, #0f172a, #020617)',
-              padding: '24px',
-            }
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'radial-gradient(circle at top, #0f172a, #020617)',
+            padding: '24px',
+          }
       }
     >
       <div
@@ -178,7 +202,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '14px' }} noValidate>
           <div style={{ display: 'grid', gap: '6px' }}>
             <label
               htmlFor="fullName"
@@ -191,17 +215,24 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
               id="fullName"
               type="text"
               value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
+              onChange={(event) => {
+                setFullName(event.target.value)
+                if (errors.fullName) setErrors({ ...errors, fullName: undefined })
+              }}
               placeholder="Nguyễn Văn A"
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
-                border: '1px solid rgba(55,65,81,1)',
+                border: errors.fullName ? '1px solid #ef4444' : '1px solid rgba(55,65,81,1)',
                 backgroundColor: '#020617',
                 color: '#e5e7eb',
                 fontSize: '14px',
+                outline: 'none',
               }}
             />
+            {errors.fullName && (
+              <span style={{ color: '#ef4444', fontSize: '12px' }}>{errors.fullName}</span>
+            )}
           </div>
 
           <div style={{ display: 'grid', gap: '6px' }}>
@@ -214,19 +245,26 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
 
             <input
               id="email"
-              type="email"
+              type="text"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value)
+                if (errors.email) setErrors({ ...errors, email: undefined })
+              }}
               placeholder="example@student.edu.vn"
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
-                border: '1px solid rgba(55,65,81,1)',
+                border: errors.email ? '1px solid #ef4444' : '1px solid rgba(55,65,81,1)',
                 backgroundColor: '#020617',
                 color: '#e5e7eb',
                 fontSize: '14px',
+                outline: 'none',
               }}
             />
+            {errors.email && (
+              <span style={{ color: '#ef4444', fontSize: '12px' }}>{errors.email}</span>
+            )}
           </div>
 
           <div style={{ display: 'grid', gap: '6px' }}>
@@ -241,17 +279,24 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
               id="password"
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                if (errors.password) setErrors({ ...errors, password: undefined })
+              }}
               placeholder="••••••••"
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
-                border: '1px solid rgba(55,65,81,1)',
+                border: errors.password ? '1px solid #ef4444' : '1px solid rgba(55,65,81,1)',
                 backgroundColor: '#020617',
                 color: '#e5e7eb',
                 fontSize: '14px',
+                outline: 'none',
               }}
             />
+            {errors.password && (
+              <span style={{ color: '#ef4444', fontSize: '12px' }}>{errors.password}</span>
+            )}
           </div>
 
           <p
@@ -292,6 +337,12 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
               </Link>
             )}
           </p>
+
+          {errors.general && (
+            <div style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center' }}>
+              {errors.general}
+            </div>
+          )}
 
           <button
             type="submit"
