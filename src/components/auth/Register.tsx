@@ -37,19 +37,21 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
 
   const validate = () => {
     const newErrors: typeof errors = {}
-    if (!fullName.trim()) {
-      newErrors.fullName = 'Vui lòng nhập họ và tên.'
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      newErrors.fullName = 'Họ và tên phải có ít nhất 2 ký tự.'
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     if (!email.trim()) {
       newErrors.email = 'Vui lòng nhập email.'
-    } else if (!emailRegex.test(email)) {
-      newErrors.email = 'Vui lòng nhập email đúng định dạng.'
+    } else if (!emailRegex.test(email.trim())) {
+      newErrors.email = 'Vui lòng nhập email đúng định dạng (VD: example@student.com).'
     }
     if (!password) {
       newErrors.password = 'Vui lòng nhập mật khẩu.'
     } else if (password.length < 6) {
       newErrors.password = 'Mật khẩu cần có ít nhất 6 ký tự.'
+    } else if (password.length > 32) {
+      newErrors.password = 'Mật khẩu không được quá 32 ký tự.'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -220,6 +222,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
                 if (errors.fullName) setErrors({ ...errors, fullName: undefined })
               }}
               placeholder="Nguyễn Văn A"
+              maxLength={50}
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
@@ -252,6 +255,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
                 if (errors.email) setErrors({ ...errors, email: undefined })
               }}
               placeholder="example@student.edu.vn"
+              maxLength={100}
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
@@ -284,6 +288,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
                 if (errors.password) setErrors({ ...errors, password: undefined })
               }}
               placeholder="••••••••"
+              maxLength={32}
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',

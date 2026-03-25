@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useCVStore } from '../store/cvStore'
 import { Sparkles, Bold, Italic, Underline, List } from 'lucide-react'
+import { sanitizeHtml } from '../../../utils/sanitize'
 
 interface EditableTextProps {
   value: string
@@ -71,7 +72,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
         <span
           className={className}
           style={{ ...style, display: 'block', whiteSpace: 'pre-line' }}
-          dangerouslySetInnerHTML={richText ? { __html: value } : undefined}
+          dangerouslySetInnerHTML={richText ? { __html: sanitizeHtml(value) } : undefined}
         >
           {!richText ? value : undefined}
         </span>
@@ -126,7 +127,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
           ref={richRef}
           contentEditable
           suppressContentEditableWarning
-          dangerouslySetInnerHTML={{ __html: value }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
           onBlur={(e) => {
             if (!e.currentTarget.parentNode?.contains(e.relatedTarget as Node)) commit()
           }}
@@ -253,7 +254,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
     >
       {richText
         ? (value
-          ? <span dangerouslySetInnerHTML={{ __html: value }} />
+          ? <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
           : <span style={{ opacity: 0.5, fontStyle: 'italic' }}>{placeholder}</span>)
         : (value || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>{placeholder}</span>)
       }

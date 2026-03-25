@@ -1,7 +1,9 @@
 .page-ui {
   min-height: 100vh;
-  background: transparent;
-  color: #e5e7eb;
+  background-color: #020617;
+  color: #f8fafc;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  word-break: break-word;
   padding: 24px;
 }
 
@@ -411,7 +413,19 @@
 }
 
 @media (max-width: 700px) {
-  .page-ui__grid--two-cols {
+.page-ui__grid--two-cols {
     grid-template-columns: 1fr;
   }
+}
+
+/* Utilities for preventing layout breaks */
+.page-ui__text-break {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.page-ui__text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, Link, useLocation } from 'react-router-dom'
 import { ROUTES } from '../constants/routes'
 import { useAuth } from '../contexts/AuthContext'
 import { Footer } from '../components/common/Footer'
@@ -15,7 +15,6 @@ const navItems = [
 
 const RecruiterLayout = () => {
   const location = useLocation()
-  const navigate = useNavigate()
   const { user, logout } = useAuth()
   useScrollToTopOnDrillDown()
 
@@ -91,7 +90,6 @@ const RecruiterLayout = () => {
             type="button"
             onClick={() => {
               logout()
-              navigate(ROUTES.HOME, { replace: true })
             }}
             style={{
               padding: '6px 12px',

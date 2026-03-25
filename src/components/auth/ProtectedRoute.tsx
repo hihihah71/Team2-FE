@@ -37,8 +37,11 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   }
 
   if (user.role !== role) {
-    const redirectTo = user.role === 'student' ? ROUTES.STUDENT_DASHBOARD : ROUTES.RECRUITER_DASHBOARD
-    return <Navigate to={redirectTo} replace />
+    // If user is a student trying to access recruiter, send to student dashboard.
+    // Otherwise (recruiter trying to access student, or unknown role), send to recruiter or home.
+    if (user.role === 'student') return <Navigate to={ROUTES.STUDENT_DASHBOARD} replace />
+    if (user.role === 'recruiter') return <Navigate to={ROUTES.RECRUITER_DASHBOARD} replace />
+    return <Navigate to={ROUTES.HOME} replace />
   }
 
   return <>{children}</>

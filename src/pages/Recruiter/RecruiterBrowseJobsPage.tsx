@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ROUTES } from '../../constants/routes'
 import { JobCard } from '../../components/job/JobCard'
 import { Pagination } from '../../components/common/Pagination'
@@ -13,34 +13,44 @@ const RecruiterBrowseJobsPage = () => {
   const [salaryFilter, setSalaryFilter] = useState<'all' | 'under15' | '15to30' | 'over30'>('all')
   const [sortBy, setSortBy] = useState<'newest' | 'salary'>('newest')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
-  const pageSize = 6
-  const { jobs, loading, error } = useJobs({ search, page: 1, limit: 120, tags: selectedTags })
+  const pageSize = 12
+
+  const salaryMinMap = {
+    all: undefined,
+    under15: 0,
+    '15to30': 15000000,
+    over30: 30000001,
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(1)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  const { jobs, loading, error, total } = useJobs({ 
+    search: debouncedSearch, 
+    page, 
+    limit: pageSize, 
+    tags: selectedTags,
+    location: locationFilter,
+    salaryMin: salaryMinMap[salaryFilter]
+  })
 
   const filteredJobs = useMemo(() => {
     let items = [...jobs]
-    if (locationFilter.trim()) {
-      const keyword = locationFilter.trim().toLowerCase()
-      items = items.filter((job) => (job.location || '').toLowerCase().includes(keyword))
-    }
-    if (salaryFilter !== 'all') {
-      items = items.filter((job) => {
-        const min = job.salaryMin || 0
-        if (salaryFilter === 'under15') return min < 15000000
-        if (salaryFilter === '15to30') return min >= 15000000 && min <= 30000000
-        return min > 30000000
-      })
-    }
     items.sort((a, b) => {
       if (sortBy === 'salary') return (b.salaryMin || 0) - (a.salaryMin || 0)
       return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
     })
     return items
-  }, [jobs, locationFilter, salaryFilter, sortBy])
+  }, [jobs, sortBy])
 
-  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / pageSize))
-  const safePage = Math.min(page, totalPages)
-  const pagedJobs = filteredJobs.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   const onChangeSearch = (value: string) => {
     setSearch(value)
@@ -102,17 +112,17 @@ const RecruiterBrowseJobsPage = () => {
           />
 
           <p className="page-ui__muted" style={{ marginTop: '16px' }}>
-            Tìm thấy {filteredJobs.length} công việc đang tuyển
+            Tìm thấy {total} công việc đang tuyển
           </p>
 
           {error && <p className="page-ui__error">{error}</p>}
           {loading ? (
             <p className="page-ui__muted">Đang tải danh sách việc làm...</p>
-          ) : pagedJobs.length === 0 ? (
+          ) : filteredJobs.length === 0 ? (
             <p className="page-ui__muted">Không có công việc phù hợp với bộ lọc hiện tại.</p>
           ) : (
             <div className="page-ui__grid page-ui__grid--two-cols">
-              {pagedJobs.map((job) => (
+              {filteredJobs.map((job) => (
                 <JobCard
                   key={job._id}
                   job={job}
@@ -123,7 +133,7 @@ const RecruiterBrowseJobsPage = () => {
             </div>
           )}
 
-          <Pagination page={safePage} totalPages={totalPages} onChange={setPage} />
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </section>
       </div>
     </div>

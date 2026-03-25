@@ -104,10 +104,23 @@ const RecruiterJobFormPage = () => {
   }, [isEdit])
 
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.company.trim()) {
-      setError('Vui lòng nhập tiêu đề và công ty.')
+    if (!formData.title.trim() || formData.title.length < 5) {
+      setError('Tiêu đề công việc phải có ít nhất 5 ký tự.')
       return
     }
+    if (!formData.company.trim()) {
+      setError('Vui lòng nhập tên công ty.')
+      return
+    }
+
+    const sMin = parseFormattedNumber(formData.salaryMin)
+    const sMax = parseFormattedNumber(formData.salaryMax)
+
+    if (sMin != null && sMax != null && sMin > sMax) {
+      setError('Mức lương tối thiểu không được cao hơn mức lương tối đa.')
+      return
+    }
+
     setError(null)
     setSaving(true)
     try {
@@ -258,26 +271,26 @@ const RecruiterJobFormPage = () => {
           <div style={{ display: 'grid', gap: '14px' }}>
             <div>
               <label htmlFor="title" className="page-ui__label">Tiêu đề công việc *</label>
-              <input id="title" value={formData.title} onChange={handleChange} className="page-ui__input" placeholder="VD: Frontend Developer (React)" />
+              <input id="title" value={formData.title} onChange={handleChange} className="page-ui__input" placeholder="VD: Frontend Developer (React)" maxLength={100} />
             </div>
             <div className="page-ui__form-grid">
               <div>
                 <label htmlFor="company" className="page-ui__label">Công ty *</label>
-                <input id="company" value={formData.company} onChange={handleChange} className="page-ui__input" />
+                <input id="company" value={formData.company} onChange={handleChange} className="page-ui__input" maxLength={100} />
               </div>
               <div>
                 <label htmlFor="location" className="page-ui__label">Địa điểm</label>
-                <input id="location" value={formData.location} onChange={handleChange} className="page-ui__input" placeholder="VD: Hà Nội, Remote" />
+                <input id="location" value={formData.location} onChange={handleChange} className="page-ui__input" placeholder="VD: Hà Nội, Remote" maxLength={150} />
               </div>
             </div>
             <div className="page-ui__form-grid">
               <div>
                 <label htmlFor="phone" className="page-ui__label">Số điện thoại liên hệ</label>
-                <input id="phone" value={formData.phone} onChange={handleChange} className="page-ui__input" />
+                <input id="phone" value={formData.phone} onChange={handleChange} className="page-ui__input" maxLength={15} />
               </div>
               <div>
                 <label htmlFor="skills" className="page-ui__label">Kỹ năng yêu cầu</label>
-                <input id="skills" value={formData.skills} onChange={handleChange} className="page-ui__input" placeholder="React, TypeScript, Node.js" />
+                <input id="skills" value={formData.skills} onChange={handleChange} className="page-ui__input" placeholder="React, TypeScript, Node.js" maxLength={200} />
               </div>
             </div>
             <div>
@@ -303,6 +316,7 @@ const RecruiterJobFormPage = () => {
                 onChange={handleChange}
                 className="page-ui__input"
                 placeholder="VD: 15,000,000"
+                maxLength={15}
               />
             </div>
             <div>
@@ -315,12 +329,13 @@ const RecruiterJobFormPage = () => {
                 onChange={handleChange}
                 className="page-ui__input"
                 placeholder="VD: 25,000,000"
+                maxLength={15}
               />
             </div>
           </div>
           <div style={{ marginTop: '14px' }}>
             <label htmlFor="imageUrl" className="page-ui__label">Link ảnh đại diện (tuỳ chọn)</label>
-            <input id="imageUrl" value={formData.imageUrl} onChange={handleChange} className="page-ui__input" placeholder="https://..." />
+            <input id="imageUrl" value={formData.imageUrl} onChange={handleChange} className="page-ui__input" placeholder="https://..." maxLength={500} />
           </div>
           {formData.imageUrl && (
             <div style={{ marginTop: '12px' }}>
@@ -350,6 +365,7 @@ const RecruiterJobFormPage = () => {
                 onChange={handleChange}
                 className="page-ui__textarea"
                 placeholder="Mô tả nhiệm vụ, môi trường làm việc, quyền lợi..."
+                maxLength={5000}
               />
             </div>
             <div>
@@ -360,6 +376,7 @@ const RecruiterJobFormPage = () => {
                 onChange={handleChange}
                 className="page-ui__textarea"
                 placeholder="Kinh nghiệm, bằng cấp, kỹ năng mềm..."
+                maxLength={5000}
               />
             </div>
           </div>

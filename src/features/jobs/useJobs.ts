@@ -7,6 +7,8 @@ type UseJobsOptions = {
   page?: number
   limit?: number
   tags?: string[]
+  location?: string
+  salaryMin?: number
 }
 
 export function useJobs(options: UseJobsOptions = {}) {
@@ -47,7 +49,7 @@ export function useJobs(options: UseJobsOptions = {}) {
     return () => {
       cancelled = true
     }
-  }, [options.limit, options.page, options.search, tagsKey])
+  }, [options.limit, options.page, options.search, tagsKey, options.location, options.salaryMin])
 
   return { jobs, total, loading, error }
 }

@@ -9,6 +9,8 @@ export type JobListQuery = {
   search?: string
   status?: string
   tags?: string[]
+  location?: string
+  salaryMin?: number
 }
 
 function toQueryString(query: JobListQuery) {
@@ -18,6 +20,8 @@ function toQueryString(query: JobListQuery) {
   if (query.search?.trim()) params.set('search', query.search.trim())
   if (query.status?.trim()) params.set('status', query.status.trim())
   if (query.tags && query.tags.length > 0) params.set('tags', query.tags.join(','))
+  if (query.location?.trim()) params.set('location', query.location.trim())
+  if (query.salaryMin != null) params.set('salaryMin', String(query.salaryMin))
   const q = params.toString()
   return q ? `?${q}` : ''
 }

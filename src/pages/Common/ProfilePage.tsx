@@ -86,6 +86,18 @@ const ProfilePage = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate file size (e.g., 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dung lượng ảnh không được vượt quá 2MB.')
+        return
+      }
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        alert('Chỉ hỗ trợ định dạng ảnh JPEG, PNG hoặc WebP.')
+        return
+      }
+
       try {
         const maxWidth = type === 'avatar' ? 400 : 1200;
         const maxHeight = type === 'avatar' ? 400 : 800;
@@ -171,8 +183,8 @@ const ProfilePage = () => {
 
   const handlePersonalBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    const phoneRegex = /^(0|84)(3|5|7|8|9)([0-9]{8})$/
     setErrors(prev => {
       const next = { ...prev }
       if (name === 'fullName') {
@@ -396,13 +408,13 @@ const ProfilePage = () => {
     }
 
     // 3) Validate Phone Number
-    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/
+    const phoneRegex = /^(0|84)(3|5|7|8|9)([0-9]{8})$/
     if (personalInfo.phone && !phoneRegex.test(personalInfo.phone)) {
-      newErrors.phone = 'Số điện thoại không đúng định dạng.'
+      newErrors.phone = 'Số điện thoại không đúng định dạng (10 số, bắt đầu bằng 0 hoặc 84).'
     }
 
     // 4) Validate Email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     if (personalInfo.email && !emailRegex.test(personalInfo.email)) {
       newErrors.email = 'Địa chỉ Email không đúng định dạng.'
     }
@@ -582,6 +594,7 @@ const ProfilePage = () => {
                               onChange={handlePersonalChange}
                               onBlur={handlePersonalBlur}
                               placeholder="Nhập họ tên của bạn..." 
+                              maxLength={50}
                               style={errors.fullName ? { borderColor: '#ef4444' } : {}}
                             />
                             {errors.fullName && <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.fullName}</span>}
@@ -589,7 +602,7 @@ const ProfilePage = () => {
 
                           <div className="profile-form-group">
                             <label className="profile-label">Vị trí ứng tuyển / Chuyên môn</label>
-                            <input type="text" name="role" className="profile-input" value={personalInfo.role} onChange={handlePersonalChange} placeholder="Ví dụ: Backend Developer..." />
+                            <input type="text" name="role" className="profile-input" value={personalInfo.role} onChange={handlePersonalChange} placeholder="Ví dụ: Backend Developer..." maxLength={100} />
                           </div>
 
                           <div className="profile-form-group" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -629,6 +642,7 @@ const ProfilePage = () => {
                               onChange={handlePersonalChange}
                               onBlur={handlePersonalBlur}
                               placeholder="Nhập số điện thoại..." 
+                              maxLength={15}
                               style={errors.phone ? { borderColor: '#ef4444' } : {}}
                             />
                             {errors.phone && <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.phone}</span>}
@@ -644,6 +658,7 @@ const ProfilePage = () => {
                               onChange={handlePersonalChange}
                               onBlur={handlePersonalBlur}
                               placeholder="Email liên hệ..." 
+                              maxLength={100}
                               style={errors.email ? { borderColor: '#ef4444' } : {}}
                             />
                             {errors.email && <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.email}</span>}
@@ -651,12 +666,12 @@ const ProfilePage = () => {
 
                           <div className="profile-form-group full-width">
                             <label className="profile-label">Nơi ở hiện tại / Địa chỉ</label>
-                            <input type="text" name="address" className="profile-input" value={personalInfo.address} onChange={handlePersonalChange} placeholder="Nhập địa chỉ..." />
+                            <input type="text" name="address" className="profile-input" value={personalInfo.address} onChange={handlePersonalChange} placeholder="Nhập địa chỉ..." maxLength={200} />
                           </div>
 
                           <div className="profile-form-group full-width">
                             <label className="profile-label">Giới thiệu ngắn về bản thân (Summary)</label>
-                            <textarea name="summary" className="profile-input profile-textarea" placeholder="Viết vài dòng giới thiệu sự nghiệp..." value={personalInfo.summary} onChange={handlePersonalChange}></textarea>
+                            <textarea name="summary" className="profile-input profile-textarea" placeholder="Viết vài dòng giới thiệu sự nghiệp..." value={personalInfo.summary} onChange={handlePersonalChange} maxLength={2000}></textarea>
                           </div>
                         </div>
                       </div>
@@ -802,13 +817,13 @@ const ProfilePage = () => {
                                   <div className="profile-timeline-dot"></div>
                                   <div className="profile-timeline-header">
                                     <div style={{ flex: 1, marginRight: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '16px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.name} placeholder="Tên dự án (VD: E-commerce Website)" onChange={(e) => handleProjectChange(prj.id, 'name', e.target.value)} />
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.role} placeholder="Vai trò của bạn (VD: Fullstack Developer)" onChange={(e) => handleProjectChange(prj.id, 'role', e.target.value)} />
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.technologies} placeholder="Công nghệ sử dụng (VD: React, Node.js)" onChange={(e) => handleProjectChange(prj.id, 'technologies', e.target.value)} />
-                                      <input type="url" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.link} placeholder="Link demo hoặc Source Code" onChange={(e) => handleProjectChange(prj.id, 'link', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '16px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.name} placeholder="Tên dự án (VD: E-commerce Website)" onChange={(e) => handleProjectChange(prj.id, 'name', e.target.value)} maxLength={100} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.role} placeholder="Vai trò của bạn (VD: Fullstack Developer)" onChange={(e) => handleProjectChange(prj.id, 'role', e.target.value)} maxLength={100} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.technologies} placeholder="Công nghệ sử dụng (VD: React, Node.js)" onChange={(e) => handleProjectChange(prj.id, 'technologies', e.target.value)} maxLength={200} />
+                                      <input type="url" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.link} placeholder="Link demo hoặc Source Code" onChange={(e) => handleProjectChange(prj.id, 'link', e.target.value)} maxLength={500} />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, alignSelf: 'flex-start' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', width: '130px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.date} placeholder="Thời gian..." onChange={(e) => handleProjectChange(prj.id, 'date', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', width: '130px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={prj.date} placeholder="Thời gian..." onChange={(e) => handleProjectChange(prj.id, 'date', e.target.value)} maxLength={50} />
                                       <button type="button" style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', display: 'flex' }} onClick={() => handleRemoveProject(prj.id)} title="Xóa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                                     </div>
                                   </div>
@@ -842,6 +857,7 @@ const ProfilePage = () => {
                                         value={edu.title}
                                         placeholder="Bằng cấp / Trình độ"
                                         onChange={(e) => handleEducationChange(edu.id, 'title', e.target.value)}
+                                        maxLength={100}
                                       />
                                       <input
                                         type="text"
@@ -850,6 +866,7 @@ const ProfilePage = () => {
                                         value={edu.school}
                                         placeholder="Tên trường / Cơ sở"
                                         onChange={(e) => handleEducationChange(edu.id, 'school', e.target.value)}
+                                        maxLength={100}
                                       />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
@@ -860,6 +877,7 @@ const ProfilePage = () => {
                                         value={edu.date}
                                         placeholder="Thời gian..."
                                         onChange={(e) => handleEducationChange(edu.id, 'date', e.target.value)}
+                                        maxLength={50}
                                       />
                                       <button
                                         type="button"
@@ -878,6 +896,7 @@ const ProfilePage = () => {
                                       value={edu.desc}
                                       placeholder="Mô tả quá trình học tập..."
                                       onChange={(e) => handleEducationChange(edu.id, 'desc', e.target.value)}
+                                      maxLength={1000}
                                     />
                                   </div>
                                 </div>
@@ -903,8 +922,8 @@ const ProfilePage = () => {
                                   <div className="profile-timeline-dot"></div>
                                   <div className="profile-timeline-header">
                                     <div style={{ flex: 1, marginRight: '16px', display: 'flex', gap: '8px' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)', flex: 1 }} value={lang.name} placeholder="Ngôn ngữ (VD: Tiếng Anh)" onChange={(e) => handleLanguageChange(lang.id, 'name', e.target.value)} />
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)', flex: 1 }} value={lang.level} placeholder="Trình độ (VD: IELTS 7.0, Giao tiếp tốt)" onChange={(e) => handleLanguageChange(lang.id, 'level', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)', flex: 1 }} value={lang.name} placeholder="Ngôn ngữ (VD: Tiếng Anh)" onChange={(e) => handleLanguageChange(lang.id, 'name', e.target.value)} maxLength={50} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)', flex: 1 }} value={lang.level} placeholder="Trình độ (VD: IELTS 7.0, Giao tiếp tốt)" onChange={(e) => handleLanguageChange(lang.id, 'level', e.target.value)} maxLength={50} />
                                     </div>
                                     <button type="button" style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', display: 'flex' }} onClick={() => handleRemoveLanguage(lang.id)} title="Xóa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                                   </div>
@@ -926,11 +945,11 @@ const ProfilePage = () => {
                                   <div className="profile-timeline-dot"></div>
                                   <div className="profile-timeline-header">
                                     <div style={{ flex: 1, marginRight: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)' }} value={cert.name} placeholder="Tên chứng chỉ / giải thưởng" onChange={(e) => handleCertChange(cert.id, 'name', e.target.value)} />
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={cert.organization} placeholder="Tổ chức cấp" onChange={(e) => handleCertChange(cert.id, 'organization', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)' }} value={cert.name} placeholder="Tên chứng chỉ / giải thưởng" onChange={(e) => handleCertChange(cert.id, 'name', e.target.value)} maxLength={150} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={cert.organization} placeholder="Tổ chức cấp" onChange={(e) => handleCertChange(cert.id, 'organization', e.target.value)} maxLength={150} />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, alignSelf: 'flex-start' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', width: '130px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={cert.date} placeholder="Thời gian (VD: 08/2023)" onChange={(e) => handleCertChange(cert.id, 'date', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', width: '130px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={cert.date} placeholder="Thời gian (VD: 08/2023)" onChange={(e) => handleCertChange(cert.id, 'date', e.target.value)} maxLength={50} />
                                       <button type="button" style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', display: 'flex' }} onClick={() => handleRemoveCert(cert.id)} title="Xóa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                                     </div>
                                   </div>
@@ -952,16 +971,16 @@ const ProfilePage = () => {
                                   <div className="profile-timeline-dot"></div>
                                   <div className="profile-timeline-header">
                                     <div style={{ flex: 1, marginRight: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.name} placeholder="Tên câu lạc bộ / Hoạt động" onChange={(e) => handleActivityChange(act.id, 'name', e.target.value)} />
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.role} placeholder="Vai trò" onChange={(e) => handleActivityChange(act.id, 'role', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '15px', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.name} placeholder="Tên câu lạc bộ / Hoạt động" onChange={(e) => handleActivityChange(act.id, 'name', e.target.value)} maxLength={150} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.role} placeholder="Vai trò" onChange={(e) => handleActivityChange(act.id, 'role', e.target.value)} maxLength={100} />
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, alignSelf: 'flex-start' }}>
-                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', width: '130px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.date} placeholder="Thời gian..." onChange={(e) => handleActivityChange(act.id, 'date', e.target.value)} />
+                                      <input type="text" className="profile-input" style={{ padding: '6px 12px', width: '130px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.date} placeholder="Thời gian..." onChange={(e) => handleActivityChange(act.id, 'date', e.target.value)} maxLength={50} />
                                       <button type="button" style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', display: 'flex' }} onClick={() => handleRemoveActivity(act.id)} title="Xóa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                                     </div>
                                   </div>
                                   <div className="profile-timeline-desc">
-                                    <textarea className="profile-input profile-textarea" style={{ minHeight: '60px', marginTop: '8px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.desc} placeholder="Mô tả các hoạt động của bạn..." onChange={(e) => handleActivityChange(act.id, 'desc', e.target.value)} />
+                                    <textarea className="profile-input profile-textarea" style={{ minHeight: '60px', marginTop: '8px', backgroundColor: 'rgba(255,255,255,0.02)' }} value={act.desc} placeholder="Mô tả các hoạt động của bạn..." onChange={(e) => handleActivityChange(act.id, 'desc', e.target.value)} maxLength={1000} />
                                   </div>
                                 </div>
                               ))}
@@ -977,7 +996,7 @@ const ProfilePage = () => {
                             </h2>
                             <div className="profile-form-group full-width">
                               <div className="profile-skill-input-wrapper">
-                                <input type="text" className="profile-input" placeholder="Thêm sở thích (VD: Chạy bộ, Esports...)" value={newHobby} onChange={(e) => setNewHobby(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddHobby()} />
+                                <input type="text" className="profile-input" placeholder="Thêm sở thích (VD: Chạy bộ, Esports...)" value={newHobby} onChange={(e) => setNewHobby(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddHobby()} maxLength={50} />
                                 <button type="button" className="profile-btn profile-btn-primary" onClick={handleAddHobby}>Thêm</button>
                               </div>
                               <div className="profile-skills-wrapper">
@@ -1022,6 +1041,7 @@ const ProfilePage = () => {
                             value={companyInfo.companyName} 
                             onChange={handleCompanyChange} 
                             placeholder="Tên công ty..." 
+                            maxLength={100}
                             style={errors.companyName ? { borderColor: '#ef4444' } : {}}
                           />
                           {errors.companyName && <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.companyName}</span>}
@@ -1029,7 +1049,7 @@ const ProfilePage = () => {
 
                         <div className="profile-form-group">
                           <label className="profile-label">Website</label>
-                          <input type="url" name="website" className="profile-input" value={companyInfo.website} onChange={handleCompanyChange} placeholder="https://..." />
+                          <input type="url" name="website" className="profile-input" value={companyInfo.website} onChange={handleCompanyChange} placeholder="https://..." maxLength={200} />
                         </div>
 
                         <div className="profile-form-group">
@@ -1044,12 +1064,12 @@ const ProfilePage = () => {
 
                         <div className="profile-form-group full-width">
                           <label className="profile-label">Địa chỉ trụ sở</label>
-                          <input type="text" name="address" className="profile-input" value={companyInfo.address} onChange={handleCompanyChange} placeholder="Nhập địa chỉ..." />
+                          <input type="text" name="address" className="profile-input" value={companyInfo.address} onChange={handleCompanyChange} placeholder="Nhập địa chỉ..." maxLength={300} />
                         </div>
 
                         <div className="profile-form-group full-width">
                           <label className="profile-label">Giới thiệu công ty</label>
-                          <textarea name="description" className="profile-input profile-textarea" value={companyInfo.description} onChange={handleCompanyChange} placeholder="Mô tả về lịch sử, văn hóa, môi trường làm việc của công ty..."></textarea>
+                          <textarea name="description" className="profile-input profile-textarea" value={companyInfo.description} onChange={handleCompanyChange} placeholder="Mô tả về lịch sử, văn hóa, môi trường làm việc của công ty..." maxLength={5000}></textarea>
                         </div>
                       </div>
 

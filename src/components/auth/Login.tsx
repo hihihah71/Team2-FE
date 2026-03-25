@@ -56,8 +56,8 @@ const Login = ({
     if (!email.trim()) {
       newErrors.email = 'Vui lòng nhập email.'
     } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+      if (!emailRegex.test(email.trim())) {
         newErrors.email = 'Vui lòng nhập email đúng định dạng.'
       }
     }
@@ -240,6 +240,7 @@ const Login = ({
                 if (errors.email) setErrors({ ...errors, email: undefined })
               }}
               placeholder="example@student.edu.vn"
+              maxLength={100}
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',
@@ -272,6 +273,7 @@ const Login = ({
                 if (errors.password) setErrors({ ...errors, password: undefined })
               }}
               placeholder="••••••••"
+              maxLength={32}
               style={{
                 padding: '9px 10px',
                 borderRadius: '8px',

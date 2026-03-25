@@ -21,9 +21,17 @@ export const JobCard = ({ job, detailPath }: JobCardProps) => {
       <article className="page-ui__card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', cursor: 'pointer' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '18px', color: '#f8fafc' }}>{job.title}</h3>
-            <p className="page-ui__muted" style={{ margin: '6px 0 0' }}>
-              {job.company || job.companyName || 'Doanh nghiệp'} · {job.location || 'N/A'}
+            <h3 className="page-ui__text-break" style={{ margin: 0, fontSize: '18px', color: '#f8fafc' }}>{job.title}</h3>
+            <p className="page-ui__muted page-ui__text-break" style={{ margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {job.company || job.companyName || 'Doanh nghiệp'}
+              {job.isVerifiedRecruiter && (
+                <span title="Nhà tuyển dụng đã được xác minh" style={{ display: 'inline-flex', color: '#3b82f6' }}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '14px', height: '14px' }}>
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                  </svg>
+                </span>
+              )}
+              · {job.location || 'N/A'}
             </p>
           </div>
           {job.imageUrl && (

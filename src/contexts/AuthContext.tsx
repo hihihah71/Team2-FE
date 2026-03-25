@@ -28,13 +28,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback((token: string, userData: User) => {
     window.localStorage.setItem(TOKEN_KEY, token)
+    window.localStorage.setItem('current_user', JSON.stringify(userData))
     setUserState(userData)
   }, [])
 
   const logout = useCallback(() => {
-    window.localStorage.removeItem(TOKEN_KEY)
-    window.localStorage.removeItem('current_user')
+    window.localStorage.clear() // Clear everything to be safe
     setUserState(null)
+    window.location.href = '/' // Force hard redirect to home
   }, [])
 
   // Khôi phục phiên khi load/reload: có token thì gọi /auth/me để validate và lấy user

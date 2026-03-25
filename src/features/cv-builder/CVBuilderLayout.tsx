@@ -167,8 +167,12 @@ export const CVBuilderLayout: React.FC<CVBuilderLayoutProps> = ({ onClose, onSav
            templateId: fullState.templateId,
            themeColor: fullState.themeColor,
            fontFamily: fullState.fontFamily,
+           spacing: fullState.spacing,
            avatarUrl: fullState.avatarUrl,
-           sectionsOrder: fullState.sectionsOrder
+           sectionsOrder: fullState.sectionsOrder,
+           hiddenSections: fullState.hiddenSections,
+           hiddenItems: fullState.hiddenItems,
+           customSections: fullState.customSections,
          }
       })
       

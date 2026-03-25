@@ -29,7 +29,7 @@ export function getMyCVs() {
   )
 }
 
-export function createCv(payload: { name: string; fileUrl?: string; isDefault?: boolean }) {
+export function createCv(payload: { name: string; fileUrl?: string; isDefault?: boolean; cvData?: any }) {
   return apiPost<CvItem>(API_ENDPOINTS.CVS_CREATE, payload).then(normalizeCv)
 }
 
