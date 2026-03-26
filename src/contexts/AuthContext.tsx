@@ -40,7 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
-    window.localStorage.clear() // Clear everything to be safe
+    window.localStorage.removeItem(TOKEN_KEY)
+    window.localStorage.removeItem('current_user')
     setUserState(null)
     window.location.href = '/' // Force hard redirect to home
   }, [])
