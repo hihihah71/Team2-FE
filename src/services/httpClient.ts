@@ -9,14 +9,13 @@ function getToken() {
   return localStorage.getItem("access_token")
 }
 
-function getHeaders() {
-  const token = getToken()
-
+function getHeaders(isFormData: boolean = false) {
+  const token = localStorage.getItem("access_token");
   return {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     Accept: "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
-  }
+  };
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -53,10 +52,12 @@ export function apiGet<T>(path: string) {
 export function apiPost<T>(path: string, body: any) {
   const validationError = validatePayloadTextFields(body)
   if (validationError) throw new Error(validationError)
-  return request<T>(path, {
+  const isFormData = body instanceof FormData;
+  return fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
     method: "POST",
-    body: JSON.stringify(body)
-  })
+    headers: getHeaders(isFormData),
+    body: isFormData ? body : JSON.stringify(body)
+  }).then(handleResponse<T>);
 }
 
 export function apiPut<T>(path: string, body: any) {
