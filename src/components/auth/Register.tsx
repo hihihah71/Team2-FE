@@ -10,7 +10,7 @@ type Role = 'student' | 'recruiter'
 
 type RegisterProps = {
   asModal?: boolean
-  onSwitchToLogin?: () => void
+  onSwitchToLogin?: (message?: string) => void
 }
 
 type RegisterResponse = {
@@ -73,8 +73,12 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
         role,
       })
 
-      window.alert('Đăng ký thành công, vui lòng đăng nhập.')
-      navigate(`/login?role=${role}`)
+
+      if (asModal && onSwitchToLogin) {
+        onSwitchToLogin('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.')
+      } else {
+        navigate(`/login?role=${role}`)
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Đăng ký thất bại.'
@@ -315,7 +319,7 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
             {asModal && onSwitchToLogin ? (
               <button
                 type="button"
-                onClick={onSwitchToLogin}
+                onClick={() => onSwitchToLogin?.()}
                 style={{
                   border: 'none',
                   background: 'none',

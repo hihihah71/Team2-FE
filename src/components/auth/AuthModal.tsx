@@ -15,6 +15,12 @@ const CLOSE_ANIMATION_MS = 260
 
 const AuthModal = ({ mode, role, onClose, onSwitchMode }: AuthModalProps) => {
   const [isClosing, setIsClosing] = useState(false)
+  const [activeMessage, setActiveMessage] = useState<string | undefined>()
+
+  const handleSwitchMode = (newMode: 'login' | 'register', message?: string) => {
+    setActiveMessage(message)
+    onSwitchMode(newMode)
+  }
 
   const handleRequestClose = () => {
     if (isClosing) return
@@ -46,12 +52,13 @@ const AuthModal = ({ mode, role, onClose, onSwitchMode }: AuthModalProps) => {
           <Login
             asModal
             role={role}
-            onSwitchToRegister={() => onSwitchMode('register')}
+            successMessage={activeMessage}
+            onSwitchToRegister={() => handleSwitchMode('register')}
           />
         ) : (
           <Register
             asModal
-            onSwitchToLogin={() => onSwitchMode('login')}
+            onSwitchToLogin={(msg) => handleSwitchMode('login', msg)}
           />
         )}
       </div>

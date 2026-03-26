@@ -12,6 +12,7 @@ type Role = 'student' | 'recruiter'
 type LoginProps = {
   asModal?: boolean
   role?: Role
+  successMessage?: string
   onSwitchToRegister?: () => void
 }
 
@@ -28,6 +29,7 @@ type LoginResponse = {
 const Login = ({
   asModal = false,
   role: propRole,
+  successMessage,
   onSwitchToRegister,
 }: LoginProps) => {
   const navigate = useNavigate()
@@ -167,6 +169,23 @@ const Login = ({
         <p style={{ color: '#9ca3af', marginBottom: '20px', fontSize: '14px' }}>
           Truy cập nền tảng quản lý CV cho sinh viên và nhà tuyển dụng.
         </p>
+        
+        {successMessage && (
+          <div 
+            style={{ 
+              backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              color: '#10b981',
+              padding: '10px 12px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}
+          >
+            {successMessage}
+          </div>
+        )}
 
         {/* Role toggle */}
         <div
