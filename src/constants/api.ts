@@ -47,6 +47,7 @@ export const API_ENDPOINTS = {
   // Profile (student & recruiter)
   PROFILE_ME: '/profile/me',
   PROFILE_SAVE: '/profile/me',
+  PROFILE_RECRUITER_VERIFICATION_REQUEST: '/profile/recruiter-verification-request',
 
   // Saved jobs
   SAVED_JOBS_ME: '/saved-jobs/me',
@@ -58,4 +59,25 @@ export const API_ENDPOINTS = {
   // Dashboards
   DASHBOARD_STUDENT: '/dashboard/student',
   DASHBOARD_RECRUITER: '/dashboard/recruiter',
+
+  // Reports
+  REPORTS_CREATE: '/reports',
+
+  // Admin
+  ADMIN_OVERVIEW: '/admin/overview',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_USER_BAN: (userId: string) => `/admin/users/${userId}/ban`,
+  ADMIN_USER_UNBAN: (userId: string) => `/admin/users/${userId}/unban`,
+  ADMIN_RECRUITERS: '/admin/recruiters',
+  ADMIN_RECRUITER_APPROVE: (userId: string) => `/admin/recruiters/${userId}/approve`,
+  ADMIN_RECRUITER_REJECT: (userId: string) => `/admin/recruiters/${userId}/reject`,
+  ADMIN_JOBS: '/admin/jobs',
+  ADMIN_JOB_DETAIL: (jobId: string) => `/admin/jobs/${jobId}`,
+  ADMIN_JOB_APPROVE: (jobId: string) => `/admin/jobs/${jobId}/approve`,
+  ADMIN_JOB_REJECT: (jobId: string) => `/admin/jobs/${jobId}/reject`,
+  ADMIN_JOB_FLAG: (jobId: string) => `/admin/jobs/${jobId}/flag`,
+  ADMIN_JOB_BAN: (jobId: string) => `/admin/jobs/${jobId}/ban`,
+  ADMIN_JOB_DELETE: (jobId: string) => `/admin/jobs/${jobId}`,
+  ADMIN_REPORTS: '/admin/reports',
+  ADMIN_REPORT_RESOLVE: (reportId: string) => `/admin/reports/${reportId}/resolve`,
 } as const

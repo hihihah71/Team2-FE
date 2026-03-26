@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { validatePayloadTextFields } from '../utils/inputValidation'
 
 type ApiErrorShape = {
   message?: string
@@ -50,6 +51,8 @@ export function apiGet<T>(path: string) {
 }
 
 export function apiPost<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "POST",
     body: JSON.stringify(body)
@@ -57,6 +60,8 @@ export function apiPost<T>(path: string, body: any) {
 }
 
 export function apiPut<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "PUT",
     body: JSON.stringify(body)
@@ -64,6 +69,8 @@ export function apiPut<T>(path: string, body: any) {
 }
 
 export function apiPatch<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "PATCH",
     body: JSON.stringify(body)

@@ -3,15 +3,18 @@ import { ROUTES } from '../../constants/routes'
 import { useEffect, useState } from 'react'
 import { createJob, getJobById, updateJob, deleteJob } from '../../features/jobs/jobsService'
 import { getMyProfile } from '../../features/profile/profileService'
+import { useAuth } from '../../contexts/AuthContext'
 import { PageHeader } from '../../components/common/PageHeader'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { TagFilter } from '../../components/common/TagFilter'
 import type { JobItem } from '../../types/domain'
+import { validateText } from '../../utils/inputValidation'
 import '../PageUI.css'
 
 type ToastState = { type: 'success' | 'error'; message: string } | null
 
 const RecruiterJobFormPage = () => {
+  const { user } = useAuth()
   const { jobId } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
   const isEdit = jobId && jobId !== 'new'
@@ -54,7 +57,16 @@ const RecruiterJobFormPage = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
     if (id === 'salaryMin' || id === 'salaryMax') {
-      setFormData({ ...formData, [id]: formatNumberWithCommas(value) })
+      const nextData = { ...formData, [id]: formatNumberWithCommas(value) }
+      setFormData(nextData)
+
+      const nextMin = parseFormattedNumber(nextData.salaryMin)
+      const nextMax = parseFormattedNumber(nextData.salaryMax)
+      if (nextMin != null && nextMax != null && nextMin > nextMax) {
+        setError('Mức lương tối thiểu không được cao hơn mức lương tối đa.')
+      } else if (error === 'Mức lương tối thiểu không được cao hơn mức lương tối đa.') {
+        setError(null)
+      }
       return
     }
     setFormData({ ...formData, [id]: value })
@@ -104,13 +116,96 @@ const RecruiterJobFormPage = () => {
   }, [isEdit])
 
   const handleSubmit = async () => {
-    if (!formData.title.trim() || formData.title.length < 5) {
-      setError('Tiêu đề công việc phải có ít nhất 5 ký tự.')
+    if (!isEdit && !user?.isVerifiedRecruiter) {
+      setError('Tai khoan recruiter cua ban dang cho admin duyet. Chua the dang tin.')
       return
     }
-    if (!formData.company.trim()) {
-      setError('Vui lòng nhập tên công ty.')
+    const titleError = validateText(formData.title, {
+      required: true,
+      minLength: 5,
+      maxLength: 100,
+      maxWords: 12,
+      maxWordLength: 20,
+      emptyMessage: 'Vui lòng nhập tiêu đề công việc.',
+    })
+    if (titleError) {
+      setError(`Tieu de cong viec: ${titleError}`)
       return
+    }
+
+    const companyError = validateText(formData.company, {
+      required: true,
+      maxLength: 100,
+      maxWords: 10,
+      maxWordLength: 20,
+      emptyMessage: 'Vui lòng nhập tên công ty.',
+    })
+    if (companyError) {
+      setError(`Cong ty: ${companyError}`)
+      return
+    }
+
+    const locationError = validateText(formData.location, {
+      maxLength: 150,
+      maxWords: 15,
+      maxWordLength: 20,
+    })
+    if (locationError) {
+      setError(`Dia diem: ${locationError}`)
+      return
+    }
+
+    const descriptionError = validateText(formData.description, {
+      maxLength: 5000,
+      maxWords: 300,
+      maxWordLength: 20,
+    })
+    if (descriptionError) {
+      setError(`Mo ta cong viec: ${descriptionError}`)
+      return
+    }
+
+    const requirementsError = validateText(formData.requirements, {
+      maxLength: 5000,
+      maxWords: 300,
+      maxWordLength: 20,
+    })
+    if (requirementsError) {
+      setError(`Yeu cau ung vien: ${requirementsError}`)
+      return
+    }
+
+    const skillsError = validateText(formData.skills, {
+      maxLength: 200,
+      maxWords: 40,
+      maxWordLength: 20,
+    })
+    if (skillsError) {
+      setError(`Ky nang: ${skillsError}`)
+      return
+    }
+
+    if (formData.phone.trim() && !/^[0-9+\-\s()]{8,15}$/.test(formData.phone.trim())) {
+      setError('So dien thoai khong hop le.')
+      return
+    }
+
+    if (formData.imageUrl.trim()) {
+      const imageUrlError = validateText(formData.imageUrl, {
+        maxLength: 500,
+        maxWords: 1,
+        maxWordLength: 500,
+      })
+      if (imageUrlError) {
+        setError(`Image URL: ${imageUrlError}`)
+        return
+      }
+      try {
+        new URL(formData.imageUrl.trim())
+      } catch {
+        setError('Image URL khong hop le.')
+        return
+      }
     }
 
     const sMin = parseFormattedNumber(formData.salaryMin)
@@ -265,6 +360,16 @@ const RecruiterJobFormPage = () => {
         )}
 
         {error && <p className="page-ui__error">{error}</p>}
+        {!isEdit && (
+          <section className="page-ui__card" style={{ marginBottom: '16px' }}>
+            <p className="page-ui__muted" style={{ margin: 0 }}>
+              Trang thai xac minh recruiter:{' '}
+              <strong style={{ color: user?.isVerifiedRecruiter ? '#86efac' : '#fca5a5' }}>
+                {user?.isVerifiedRecruiter ? 'Verified' : 'Pending/Rejected'}
+              </strong>
+            </p>
+          </section>
+        )}
 
         <section className="page-ui__card" style={{ marginBottom: '20px' }}>
           <h3 style={{ margin: '0 0 16px', fontSize: '16px', color: '#e2e8f0' }}>Thông tin cơ bản</h3>

@@ -7,6 +7,7 @@ import { apiPost } from '../../services/httpClient'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
 import { useAuth } from '../../contexts/AuthContext'
+import { validateText } from '../../utils/inputValidation'
 
 type Role = 'student' | 'recruiter'
 
@@ -56,16 +57,31 @@ const Login = ({
 
   const validate = () => {
     const newErrors: typeof errors = {}
-    if (!email.trim()) {
-      newErrors.email = 'Vui lòng nhập email.'
+    const emailError = validateText(email, {
+      required: true,
+      maxLength: 100,
+      maxWords: 1,
+      maxWordLength: 100,
+      emptyMessage: 'Vui lòng nhập email.',
+    })
+    if (emailError) {
+      newErrors.email = emailError
     } else {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       if (!emailRegex.test(email.trim())) {
         newErrors.email = 'Vui lòng nhập email đúng định dạng.'
       }
     }
-    if (!password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu.'
+    const passwordError = validateText(password, {
+      required: true,
+      minLength: 6,
+      maxLength: 32,
+      maxWords: 1,
+      maxWordLength: 32,
+      emptyMessage: 'Vui lòng nhập mật khẩu.',
+    })
+    if (passwordError) {
+      newErrors.password = passwordError
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0

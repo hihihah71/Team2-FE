@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from '../../constants/api'
-import { apiGet, apiPut } from '../../services/httpClient'
+import { apiGet, apiPatch, apiPut } from '../../services/httpClient'
 
 export type ProfilePayload = {
   personalInfo: Record<string, unknown>
@@ -21,4 +21,8 @@ export function getMyProfile() {
 
 export function saveMyProfile(payload: ProfilePayload) {
   return apiPut<void>(API_ENDPOINTS.PROFILE_SAVE, payload)
+}
+
+export function submitRecruiterVerificationRequest(payload: { note: string; evidenceImages: string[] }) {
+  return apiPatch(API_ENDPOINTS.PROFILE_RECRUITER_VERIFICATION_REQUEST, payload)
 }

@@ -35,6 +35,7 @@ export type JobItem = {
   tags?: string[]
   detailViewCount?: number
   status?: JobStatus
+  moderationStatus?: 'approved' | 'flagged' | 'rejected'
   isVerifiedRecruiter?: boolean
   createdAt?: string
   updatedAt?: string

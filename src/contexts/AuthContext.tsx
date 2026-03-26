@@ -8,8 +8,14 @@ export type User = {
   id: string
   fullName: string
   email: string
-  role: 'student' | 'recruiter'
+  role: 'student' | 'recruiter' | 'admin'
   isVerified?: boolean
+  isVerifiedRecruiter?: boolean
+  verificationRequestNote?: string
+  verificationEvidenceImages?: string[]
+  verificationRequestedAt?: string | null
+  verificationRejectReason?: string
+  isBanned?: boolean
 }
 
 type AuthContextValue = {
@@ -46,7 +52,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
       return
     }
-    apiGet<{ id: string; fullName: string; email: string; role: 'student' | 'recruiter'; isVerified: boolean }>(
+    apiGet<{
+      id: string
+      fullName: string
+      email: string
+      role: 'student' | 'recruiter' | 'admin'
+      isVerified: boolean
+      isVerifiedRecruiter?: boolean
+      verificationRequestNote?: string
+      verificationEvidenceImages?: string[]
+      verificationRequestedAt?: string | null
+      verificationRejectReason?: string
+      isBanned?: boolean
+    }>(
       API_ENDPOINTS.AUTH_ME,
     )
       .then((data) => {
@@ -56,6 +74,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.email,
           role: data.role,
           isVerified: data.isVerified,
+          isVerifiedRecruiter: data.isVerifiedRecruiter,
+          verificationRequestNote: data.verificationRequestNote,
+          verificationEvidenceImages: data.verificationEvidenceImages || [],
+          verificationRequestedAt: data.verificationRequestedAt || null,
+          verificationRejectReason: data.verificationRejectReason || '',
+          isBanned: data.isBanned,
         })
       })
       .catch(() => {

@@ -5,7 +5,7 @@ import { ROUTES } from '../../constants/routes'
 
 type ProtectedRouteProps = {
   children: ReactNode
-  role: 'student' | 'recruiter'
+  role: 'student' | 'recruiter' | 'admin'
 }
 
 /**
@@ -41,6 +41,7 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
     // Otherwise (recruiter trying to access student, or unknown role), send to recruiter or home.
     if (user.role === 'student') return <Navigate to={ROUTES.STUDENT_DASHBOARD} replace />
     if (user.role === 'recruiter') return <Navigate to={ROUTES.RECRUITER_DASHBOARD} replace />
+    if (user.role === 'admin') return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />
     return <Navigate to={ROUTES.HOME} replace />
   }
 

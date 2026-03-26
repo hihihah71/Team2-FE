@@ -57,6 +57,8 @@ const RecruiterJobsPage = () => {
     return passKeyword && passStatus
   })
 
+  const bannedCount = jobs.filter((job) => job.moderationStatus === 'rejected').length
+
   return (
     <div className="page-ui">
       <div className="page-ui__container">
@@ -72,7 +74,7 @@ const RecruiterJobsPage = () => {
           </button>
           <PageHeader
             title="Quản lý tin tuyển dụng"
-            subtitle={`${jobs.length} tin · Click vào tin để chỉnh sửa, đóng/mở hoặc xoá.`}
+            subtitle={`${jobs.length} tin · ${bannedCount} tin đã bị ban.`}
           />
           <Link to={ROUTES.RECRUITER_JOB_CREATE} className="page-ui__btn page-ui__btn--success" style={{ textDecoration: 'none' }}>
             Đăng tin mới
