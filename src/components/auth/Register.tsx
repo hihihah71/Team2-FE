@@ -2,6 +2,7 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import { apiPost } from '../../services/httpClient'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
@@ -82,6 +83,35 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Đăng ký thất bại.'
+      setErrors({ general: message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      setLoading(true)
+      setErrors({})
+
+      await apiPost<RegisterResponse & { token: string }>(API_ENDPOINTS.AUTH_GOOGLE, {
+        idToken: credentialResponse.credential,
+        role,
+      })
+
+      // If useAuth provides login, we should import and use it here too if we want auto-login
+      // But Register usually just redirects to login? No, OAuth register usually logs you in immediately.
+      // Wait, Register.tsx doesn't have useAuth currently. I should check AppRoutes and contexts.
+      // Actually, many registrations with OAuth just log the user in.
+      // I'll stick to the "Success and Switch" pattern for now if I can't easily auto-login.
+      
+      if (asModal && onSwitchToLogin) {
+        onSwitchToLogin('Đăng ký thành công bằng Google! Vui lòng đăng nhập để tiếp tục.')
+      } else {
+        navigate(`/login?role=${role}`)
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Đăng ký Google thất bại.'
       setErrors({ general: message })
     } finally {
       setLoading(false)
@@ -372,6 +402,22 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
           >
             {loading ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(148,163,184,0.2)' }} />
+            <span style={{ padding: '0 10px', fontSize: '12px', color: '#9ca3af' }}>Hoặc</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(148,163,184,0.2)' }} />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setErrors({ general: 'Đăng ký Google thất bại.' })}
+              theme="filled_black"
+              shape="pill"
+              text="signup_with"
+            />
+          </div>
         </form>
       </div>
     </div>

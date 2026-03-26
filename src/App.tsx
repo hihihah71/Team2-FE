@@ -1,4 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from './contexts/AuthContext'
 import { NotificationsProvider } from './contexts/NotificationsContext'
 import { AppRoutes } from './routes'
@@ -27,19 +28,23 @@ function AnimatedBackground() {
 }
 
 function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+  
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <NotificationsProvider>
-          <AnimatedBackground />
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <PageTransition>
-              <AppRoutes />
-            </PageTransition>
-          </div>
-        </NotificationsProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <BrowserRouter>
+        <AuthProvider>
+          <NotificationsProvider>
+            <AnimatedBackground />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <PageTransition>
+                <AppRoutes />
+              </PageTransition>
+            </div>
+          </NotificationsProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   )
 }
 

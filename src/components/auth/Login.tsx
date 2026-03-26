@@ -2,6 +2,7 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import { apiPost } from '../../services/httpClient'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
@@ -95,6 +96,31 @@ const Login = ({
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Đăng nhập thất bại.'
+      setErrors({ general: message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      setLoading(true)
+      setErrors({})
+
+      const data = await apiPost<LoginResponse>(API_ENDPOINTS.AUTH_GOOGLE, {
+        idToken: credentialResponse.credential,
+        role,
+      })
+
+      login(data.token, data.user)
+
+      if (data.user.role === 'student') {
+        navigate(ROUTES.STUDENT_DASHBOARD)
+      } else {
+        navigate(ROUTES.RECRUITER_DASHBOARD)
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Đăng nhập Google thất bại.'
       setErrors({ general: message })
     } finally {
       setLoading(false)
@@ -372,6 +398,22 @@ const Login = ({
           >
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(148,163,184,0.2)' }} />
+            <span style={{ padding: '0 10px', fontSize: '12px', color: '#9ca3af' }}>Hoặc</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(148,163,184,0.2)' }} />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setErrors({ general: 'Đăng nhập Google thất bại.' })}
+              theme="filled_black"
+              shape="pill"
+              text="signin_with"
+            />
+          </div>
         </form>
       </div>
     </div>
