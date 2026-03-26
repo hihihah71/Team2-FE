@@ -89,7 +89,7 @@ export function validatePayloadTextFields(
   const maxWordLength = options.maxWordLength ?? 20
   const skipKeyPattern =
     options.skipKeyPattern ??
-    /(token|password|email|url|uri|link|base64|image|avatar|cover|otp|code|phone|jwt)/i
+    /(token|password|email|url|uri|link|base64|image|avatar|cover|otp|code|phone|jwt|targetId)/i
   const resolveRule = (path: string): { maxWords: number; maxWordLength: number } => {
     const rule = FIELD_RULES.find((item) => item.pathPattern.test(path))
     return {
