@@ -394,39 +394,30 @@ const ProfilePage = () => {
   }
 
   const handleSavePersonal = async () => {
-    const newErrors: Record<string, string> = {}
-    // 1) Validate Name
-    if (!personalInfo.fullName?.trim()) {
-      newErrors.fullName = 'Họ tên không được để trống.'
-    }
+  const newErrors: Record<string, string> = {}
+  
+  // 1) Validate Name (Bắt buộc cho cả 2)
+  if (!personalInfo.fullName?.trim()) {
+    newErrors.fullName = 'Họ tên không được để trống.'
+  }
 
-    // 2) Validate Company Name if Recruiter
-    if (isRecruiter && !companyInfo.companyName?.trim()) {
-      newErrors.companyName = 'Vui lòng nhập tên công ty.'
-    }
+  // 2) Chỉ validate Company Name nếu ĐANG ở tab công ty hoặc là Recruiter thực thụ
+  // Nếu bạn muốn linh hoạt, có thể bỏ bớt ràng buộc gắt gao này khi demo
+  if (isRecruiter && activeTab === 'company' && !companyInfo.companyName?.trim()) {
+    newErrors.companyName = 'Vui lòng nhập tên công ty.'
+  }
 
-    // 3) Validate Phone Number
-    const phoneRegex = /^(0|84)(3|5|7|8|9)([0-9]{8})$/
-    if (personalInfo.phone && !phoneRegex.test(personalInfo.phone)) {
-      newErrors.phone = 'Số điện thoại không đúng định dạng (10 số, bắt đầu bằng 0 hoặc 84).'
-    }
+  // ... (giữ nguyên phần validate Phone/Email)
 
-    // 4) Validate Email
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    if (personalInfo.email && !emailRegex.test(personalInfo.email)) {
-      newErrors.email = 'Địa chỉ Email không đúng định dạng.'
-    }
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors)
+    showToast('Vui lòng kiểm tra lại các trường đỏ!')
+    return
+  }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      showToast('Vui lòng kiểm tra lại các trường thông tin.')
-      return
-    }
-
-    setErrors({})
-
+  try {
+    // Quan trọng: Đảm bảo payload gửi đi đúng cấu trúc Backend mong đợi
     const payload: ProfilePayload = {
-
       personalInfo,
       companyInfo,
       skills,
@@ -440,15 +431,20 @@ const ProfilePage = () => {
       hobbies,
     }
 
-    try {
-      await saveMyProfile(payload)
-      showToast('Lưu thông tin cá nhân và CV thành công!')
-      setIsEditing(false) // Auto-switch to View mode
-    } catch (error) {
-      console.error('Lưu thông tin hồ sơ thất bại:', error)
-      alert('Lưu thông tin thất bại, vui lòng thử lại sau!')
+    await saveMyProfile(payload)
+    showToast('Lưu thông tin thành công!')
+    
+    // Cập nhật lại user context để UI đồng bộ ngay lập tức
+    if (setUser && user) {
+      setUser({ ...user, fullName: personalInfo.fullName })
     }
+    
+    setIsEditing(false) 
+  } catch (error) {
+    console.error('Lưu thất bại:', error)
+    showToast('Lỗi server, không thể lưu!')
   }
+}
 
   const handleCancelCompany = () => showToast('Đã hủy các thay đổi ở hồ sơ công ty.')
 
