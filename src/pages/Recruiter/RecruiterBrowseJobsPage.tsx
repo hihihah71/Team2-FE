@@ -7,6 +7,29 @@ import { TagFilter } from '../../components/common/TagFilter'
 import { useJobs } from '../../features/jobs/useJobs'
 import '../PageUI.css'
 
+// Import thư viện biểu đồ
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 const RecruiterBrowseJobsPage = () => {
   const [search, setSearch] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
@@ -16,6 +39,27 @@ const RecruiterBrowseJobsPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const pageSize = 12
+
+  // Dữ liệu giả lập cho Insights
+  const marketInsights = {
+    salaryData: {
+      labels: ['IT/Phần mềm', 'Marketing', 'Thiết kế', 'Sale', 'Nhân sự'],
+      datasets: [{
+        label: 'Lương trung bình thị trường (Triệu VNĐ)',
+        data: [22, 15, 14, 12, 11],
+        backgroundColor: '#8A9A5B', // Sage Green
+        borderRadius: 6,
+      }]
+    },
+    skillData: {
+      labels: ['React/TS', 'Node.js', 'UI/UX', 'Python', 'Khác'],
+      datasets: [{
+        data: [40, 25, 15, 10, 10],
+        backgroundColor: ['#1ce49777', '#dfe382', '#f6ca07', '#00fec3', '#d95656'],
+        borderWidth: 0,
+      }]
+    }
+  }
 
   const salaryMinMap = {
     all: undefined,
@@ -32,7 +76,7 @@ const RecruiterBrowseJobsPage = () => {
     return () => clearTimeout(timer)
   }, [search])
 
-  const { jobs, loading, error, total } = useJobs({ 
+  const { jobs, loading, total } = useJobs({ 
     search: debouncedSearch, 
     page, 
     limit: pageSize, 
@@ -52,22 +96,77 @@ const RecruiterBrowseJobsPage = () => {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
-  const onChangeSearch = (value: string) => {
-    setSearch(value)
-    setPage(1)
-  }
-
   return (
     <div className="page-ui">
       <div className="page-ui__container">
         <PageHeader
-          title="Thị trường tuyển dụng"
-          subtitle="Xem tất cả các công việc đang được rao tuyển trên nền tảng. Lọc theo vị trí, mức lương và sắp xếp linh hoạt."
+          title="Phân tích Thị trường & Đối thủ"
+          subtitle="Công cụ hỗ trợ nhà tuyển dụng theo dõi mức lương cạnh tranh và nguồn cung nhân lực trên hệ thống."
         />
 
+        {/* MARKET INSIGHTS DASHBOARD */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
+          gap: '20px', 
+          marginBottom: '24px' 
+        }}>
+          {/* Biểu đồ 1: Lương đối thủ */}
+          <div className="page-ui__card" style={{ padding: '20px' }}>
+            <h4 style={{ marginBottom: '16px', color: '#ffffff' }}></h4>
+            <div style={{ height: '400px', width: '100%' }}>
+              <Bar 
+                data={marketInsights.salaryData} 
+                options={{ 
+                  maintainAspectRatio: false,
+                  plugins: { 
+                    legend: { display: false },
+                    title: {
+                      display: true,
+                      text: 'Lương trung bình theo ngành',
+                      font: { size: 22 },
+                      color: '#ffffff',
+                    },
+                    tooltip: {
+                      bodyFont: { size: 18, family: "'Times New Roman', serif" },
+                      titleFont: { size: 18, family: "'Times New Roman', serif" },
+                    },
+                  },
+                  scales: {
+                    x: { ticks: { font: { size: 16, family: "'Times New Roman', serif" }, color: '#ffffff' } },
+                    y: { ticks: { font: { size: 16, family: "'Times New Roman', serif" }, color: '#ffffff' } },
+                  },
+                }} 
+              />
+            </div>
+          </div>
+
+          {/* Biểu đồ 2: Phân bổ kỹ năng */}
+          <div className="page-ui__card" style={{ padding: '20px' }}>
+            <h4 style={{ marginBottom: '16px', color: '#ffffff',textAlign: 'center'  }}>Nguồn cung kỹ năng (Ứng viên)</h4>
+            <div style={{ height: '400px', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <Pie 
+                data={marketInsights.skillData} 
+                options={{ 
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      labels: { font: { size: 16, family: "'Times New Roman', serif" }, color: '#ffffff' },
+                    },
+                    tooltip: {
+                      bodyFont: { size: 18, family: "'Times New Roman', serif" },
+                      titleFont: { size: 18, family: "'Times New Roman', serif" },
+                    },
+                  },
+                }} 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* FILTERS AND JOB LIST */}
         <section className="page-ui__card">
-          <div
-            style={{
+          <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '12px',
@@ -76,9 +175,9 @@ const RecruiterBrowseJobsPage = () => {
           >
             <input
               className="page-ui__input"
-              placeholder="Tìm theo tiêu đề hoặc công ty"
+              placeholder="Tìm tin tuyển dụng của đối thủ..."
               value={search}
-              onChange={(e) => onChangeSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
             />
             <input
               className="page-ui__input"
@@ -111,15 +210,12 @@ const RecruiterBrowseJobsPage = () => {
             onChange={(tags) => { setSelectedTags(tags); setPage(1) }}
           />
 
-          <p className="page-ui__muted" style={{ marginTop: '16px' }}>
-            Tìm thấy {total} công việc đang tuyển
+          <p className="page-ui__muted" style={{ marginTop: '16px', color: '#ffffff' }}>
+            Đang hiển thị {total} tin tuyển dụng trên toàn thị trường
           </p>
 
-          {error && <p className="page-ui__error">{error}</p>}
           {loading ? (
-            <p className="page-ui__muted">Đang tải danh sách việc làm...</p>
-          ) : filteredJobs.length === 0 ? (
-            <p className="page-ui__muted">Không có công việc phù hợp với bộ lọc hiện tại.</p>
+            <p className="page-ui__muted" style={{ color: '#ffffff' }}>Đang phân tích dữ liệu...</p>
           ) : (
             <div className="page-ui__grid page-ui__grid--two-cols">
               {filteredJobs.map((job) => (
@@ -127,7 +223,7 @@ const RecruiterBrowseJobsPage = () => {
                   key={job._id}
                   job={job}
                   detailPath={ROUTES.RECRUITER_BROWSE_JOB_DETAIL.replace(':jobId', job._id)}
-                  actionLabel="Xem chi tiết"
+                  actionLabel="Phân tích tin này"
                 />
               ))}
             </div>
@@ -140,4 +236,4 @@ const RecruiterBrowseJobsPage = () => {
   )
 }
 
-export default RecruiterBrowseJobsPage
+export default RecruiterBrowseJobsPage;

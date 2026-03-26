@@ -12,9 +12,11 @@ import { getMyCVs } from '../../features/cvs/cvsService'
 import { getJobById, saveJob, trackJobView, unsaveJob } from '../../features/jobs/jobsService'
 import { getMyProfile } from '../../features/profile/profileService'
 import { buildProfilePdfBlob } from '../../features/cvs/profilePdf'
+import { createReport } from '../../features/reports/reportService'
 import type { ApplicationItem, CvItem, JobItem } from '../../types/domain'
 import { PageHeader } from '../../components/common/PageHeader'
 import VerificationModal from '../../components/auth/VerificationModal'
+import ReportModal from '../../components/common/ReportModal'
 import '../PageUI.css'
 
 type ToastState = {
@@ -41,6 +43,8 @@ const StudentJobDetailPage = () => {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
   const [profilePdfPreviewUrl, setProfilePdfPreviewUrl] = useState('')
   const [toast, setToast] = useState<ToastState>(null)
+  const [reporting, setReporting] = useState(false)
+  const [reportTargetType, setReportTargetType] = useState<'job' | 'recruiter' | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -224,6 +228,36 @@ const StudentJobDetailPage = () => {
     }
   }
 
+  const handleReport = (targetType: 'job' | 'recruiter') => {
+    setReportTargetType(targetType)
+  }
+
+  const submitReport = async (reason: string) => {
+    if (!reportTargetType || !job) return
+    const targetType = reportTargetType
+    if (!job) return
+    try {
+      setReporting(true)
+      const targetId =
+        targetType === 'job'
+          ? job._id
+          : String((job as unknown as { recruiterId?: string | { _id?: string } }).recruiterId && typeof (job as unknown as { recruiterId?: string | { _id?: string } }).recruiterId === 'object'
+            ? (job as unknown as { recruiterId?: { _id?: string } }).recruiterId?._id
+            : (job as unknown as { recruiterId?: string }).recruiterId || '')
+      if (!targetId) {
+        showToast('error', 'Không tìm thấy thông tin đối tượng báo cáo.')
+        return
+      }
+      await createReport({ targetType, targetId, reason: reason.trim() })
+      showToast('success', 'Đã gửi báo cáo. Cảm ơn bạn!')
+      setReportTargetType(null)
+    } catch (err) {
+      showToast('error', err instanceof Error ? err.message : 'Không thể gửi báo cáo.')
+    } finally {
+      setReporting(false)
+    }
+  }
+
   if (loading) return <div className="page-ui"><div className="page-ui__container"><p className="page-ui__muted">Đang tải...</p></div></div>
   if (!job) {
     return (
@@ -308,6 +342,12 @@ const StudentJobDetailPage = () => {
 
           <button onClick={handleToggleSave} disabled={saving} className="page-ui__btn page-ui__btn--secondary">
             {saved ? 'Bỏ lưu' : 'Lưu công việc'}
+          </button>
+          <button onClick={() => handleReport('job')} disabled={reporting} className="page-ui__btn page-ui__btn--danger">
+            Báo cáo job
+          </button>
+          <button onClick={() => handleReport('recruiter')} disabled={reporting} className="page-ui__btn page-ui__btn--secondary">
+            Báo cáo recruiter
           </button>
         </div>
       </section>
@@ -395,6 +435,13 @@ const StudentJobDetailPage = () => {
           setIsApplyModalOpen(true)
         }}
         email={user?.email || ''}
+      />
+      <ReportModal
+        isOpen={!!reportTargetType}
+        loading={reporting}
+        title={reportTargetType === 'recruiter' ? 'Báo cáo nhà tuyển dụng' : 'Báo cáo tin tuyển dụng'}
+        onClose={() => setReportTargetType(null)}
+        onSubmit={submitReport}
       />
       </div>
     </div>

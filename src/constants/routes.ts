@@ -26,6 +26,15 @@ export const ROUTES = {
   RECRUITER_BROWSE_JOB_DETAIL: '/recruiter/browse/:jobId',
   RECRUITER_NOTIFICATIONS: '/recruiter/notifications',
   RECRUITER_PROFILE: '/recruiter/profile',
+
+  // Admin
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_DASHBOARD: '/admin/dashboard',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_RECRUITERS: '/admin/recruiters',
+  ADMIN_JOBS: '/admin/jobs',
+  ADMIN_JOB_DETAIL: '/admin/jobs/:jobId',
+  ADMIN_REPORTS: '/admin/reports',
 } as const
 
 export type AppRouteKey = keyof typeof ROUTES

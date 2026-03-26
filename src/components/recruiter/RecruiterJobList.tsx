@@ -106,6 +106,19 @@ const RecruiterJobList = ({
                   {job.title}
                 </h3>
                 <StatusBadge status={job.status || 'draft'} />
+                {job.moderationStatus === 'rejected' && (
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      color: '#fecaca',
+                      border: '1px solid rgba(239,68,68,0.6)',
+                      borderRadius: '999px',
+                      padding: '2px 8px',
+                    }}
+                  >
+                    Đã bị ban
+                  </span>
+                )}
               </div>
               <div style={{ color: '#94a3b8', fontSize: '13px' }}>
                 {job.company} · {job.location || 'Chưa rõ'}

@@ -1,21 +1,17 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { validatePayloadTextFields } from '../utils/inputValidation'
 
 type ApiErrorShape = {
   message?: string
 }
 
-function getToken() {
-  return localStorage.getItem("access_token")
-}
-
-function getHeaders() {
-  const token = getToken()
-
+function getHeaders(isFormData: boolean = false) {
+  const token = localStorage.getItem("access_token");
   return {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     Accept: "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
-  }
+  };
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -50,13 +46,19 @@ export function apiGet<T>(path: string) {
 }
 
 export function apiPost<T>(path: string, body: any) {
-  return request<T>(path, {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
+  const isFormData = body instanceof FormData;
+  return fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
     method: "POST",
-    body: JSON.stringify(body)
-  })
+    headers: getHeaders(isFormData),
+    body: isFormData ? body : JSON.stringify(body)
+  }).then(handleResponse<T>);
 }
 
 export function apiPut<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "PUT",
     body: JSON.stringify(body)
@@ -64,6 +66,8 @@ export function apiPut<T>(path: string, body: any) {
 }
 
 export function apiPatch<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "PATCH",
     body: JSON.stringify(body)
@@ -74,5 +78,9 @@ export function apiDelete<T>(path: string) {
   return request<T>(path, {
     method: "DELETE"
   })
+}
+
+export function sendForgotPasswordEmail(email: string) {
+  return apiPost<{ message: string }>('/auth/forgot-password', { email })
 }
 
