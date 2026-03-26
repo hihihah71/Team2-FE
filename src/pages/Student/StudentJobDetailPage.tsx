@@ -14,6 +14,7 @@ import { getMyProfile } from '../../features/profile/profileService'
 import { buildProfilePdfBlob } from '../../features/cvs/profilePdf'
 import type { ApplicationItem, CvItem, JobItem } from '../../types/domain'
 import { PageHeader } from '../../components/common/PageHeader'
+import VerificationModal from '../../components/auth/VerificationModal'
 import '../PageUI.css'
 
 type ToastState = {
@@ -25,6 +26,7 @@ const StudentJobDetailPage = () => {
   const { jobId } = useParams<{ jobId: string }>()
 
   const [job, setJob] = useState<JobItem | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [applying, setApplying] = useState(false)
@@ -36,6 +38,7 @@ const StudentJobDetailPage = () => {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
   const [profilePdfPreviewUrl, setProfilePdfPreviewUrl] = useState('')
   const [toast, setToast] = useState<ToastState>(null)
 
@@ -84,6 +87,7 @@ const StudentJobDetailPage = () => {
     getMyProfile()
       .then((profile) => {
         if (!active) return
+        setUser(profile)
         const blob = buildProfilePdfBlob(profile)
         const previewUrl = URL.createObjectURL(blob)
         generatedUrl = previewUrl
@@ -151,6 +155,12 @@ const StudentJobDetailPage = () => {
       )
       return
     }
+
+    if (user && !user.isVerified) {
+      setIsVerificationModalOpen(true)
+      return
+    }
+
     setIsApplyModalOpen(true)
   }
 
@@ -377,6 +387,15 @@ const StudentJobDetailPage = () => {
     </div>
   </div>
 )}
+      <VerificationModal 
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        onVerified={() => {
+          setUser({ ...user, isVerified: true })
+          setIsApplyModalOpen(true)
+        }}
+        email={user?.email || ''}
+      />
       </div>
     </div>
   )

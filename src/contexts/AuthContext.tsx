@@ -9,6 +9,7 @@ export type User = {
   fullName: string
   email: string
   role: 'student' | 'recruiter'
+  isVerified?: boolean
 }
 
 type AuthContextValue = {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
       return
     }
-    apiGet<{ id: string; fullName: string; email: string; role: 'student' | 'recruiter' }>(
+    apiGet<{ id: string; fullName: string; email: string; role: 'student' | 'recruiter'; isVerified: boolean }>(
       API_ENDPOINTS.AUTH_ME,
     )
       .then((data) => {
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fullName: data.fullName,
           email: data.email,
           role: data.role,
+          isVerified: data.isVerified,
         })
       })
       .catch(() => {

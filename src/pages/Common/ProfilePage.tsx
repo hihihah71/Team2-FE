@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
+import { useAuth } from '../../contexts/AuthContext'
 import ProfileView from '../../components/Profile/ProfileView'
+import VerificationModal from '../../components/auth/VerificationModal'
 import './ProfilePage.css'
 import '../PageUI.css'
 import { DEFAULT_COMPANY_INFO, DEFAULT_PERSONAL_INFO } from '../../constants/profileDefaults'
 import { getMyProfile, saveMyProfile, type ProfilePayload } from '../../features/profile/profileService'
 
 const ProfilePage = () => {
+  const { user, setUser } = useAuth()
   const location = useLocation()
   const isRecruiter = location.pathname.startsWith('/recruiter')
 
@@ -18,6 +21,7 @@ const ProfilePage = () => {
   const [toastMessage, setToastMessage] = useState('')
   const [toastClosing, setToastClosing] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
 
   // 1) Tạo các State chứa dữ liệu Form (giá trị mặc định rỗng, dữ liệu thực tế lấy từ API)
   const [personalInfo, setPersonalInfo] = useState(DEFAULT_PERSONAL_INFO)
@@ -159,13 +163,7 @@ const ProfilePage = () => {
   }
 
   const handleVerifyEmail = () => {
-    if (window.confirm(`Hệ thống sẽ gửi email xác thực đến địa chỉ: ${personalInfo.email}\nBạn có muốn thực hiện xác thực ngay?`)) {
-      showToast('Đang gửi email xác thực...')
-      setTimeout(() => {
-        setPersonalInfo(prev => ({ ...prev, isVerified: true }))
-        showToast('Tài khoản đã được xác thực thành công qua Email!')
-      }, 1500)
-    }
+    setIsVerificationModalOpen(true)
   }
 
   // Personal Form Handlers
@@ -1090,6 +1088,18 @@ const ProfilePage = () => {
             </div>
           )}
         </div>
+        <VerificationModal 
+          isOpen={isVerificationModalOpen}
+          onClose={() => setIsVerificationModalOpen(false)}
+          onVerified={() => {
+            setPersonalInfo(prev => ({ ...prev, isVerified: true }))
+            if (user) {
+              setUser({ ...user, isVerified: true })
+            }
+            showToast('Tài khoản đã được xác thực thành công!')
+          }}
+          email={personalInfo.email}
+        />
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
+import { CheckCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getStudentDashboardStats } from '../../features/dashboard/dashboardService'
 import { getJobs } from '../../features/jobs/jobsService'
@@ -108,7 +109,16 @@ const StudentDashboardPage = () => {
           
           <div className="top-section">
             <PageHeader
-              title={`Chào buổi sáng, ${user?.fullName || 'Sinh Viên'}! `}
+              title={
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Chào buổi sáng, {user?.fullName || 'Sinh Viên'}!
+                  {user?.isVerified && (
+                    <span title="Tài khoản đã xác thực">
+                      <CheckCircle size={24} color="#3b82f6" fill="rgba(59,130,246,0.1)" />
+                    </span>
+                  )}
+                </div>
+              }
               subtitle="Các công việc mới đang chờ bạn khám phá."
             />
           </div>

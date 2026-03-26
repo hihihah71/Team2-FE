@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 type PageHeaderProps = {
-  title: string
+  title: string | React.ReactNode
   subtitle?: string
   backTo?: string
   backLabel?: string

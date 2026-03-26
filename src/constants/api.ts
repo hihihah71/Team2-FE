@@ -7,6 +7,8 @@ export const API_ENDPOINTS = {
   AUTH_REGISTER: '/auth/register',
   AUTH_ME: '/auth/me',
   AUTH_GOOGLE: '/auth/google',
+  AUTH_REQUEST_VERIFICATION: '/auth/request-verification',
+  AUTH_VERIFY_ACCOUNT: '/auth/verify-account',
 
   // Jobs (public + recruiter + student save)
   JOBS_LIST: '/jobs',
