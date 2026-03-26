@@ -5,10 +5,6 @@ type ApiErrorShape = {
   message?: string
 }
 
-function getToken() {
-  return localStorage.getItem("access_token")
-}
-
 function getHeaders(isFormData: boolean = false) {
   const token = localStorage.getItem("access_token");
   return {
@@ -82,5 +78,9 @@ export function apiDelete<T>(path: string) {
   return request<T>(path, {
     method: "DELETE"
   })
+}
+
+export function sendForgotPasswordEmail(email: string) {
+  return apiPost<{ message: string }>('/auth/forgot-password', { email })
 }
 
