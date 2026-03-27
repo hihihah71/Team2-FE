@@ -6,6 +6,7 @@ import { GoogleLogin } from '@react-oauth/google'
 import { apiPost } from '../../services/httpClient'
 import { API_ENDPOINTS } from '../../constants/api'
 import { ROUTES } from '../../constants/routes'
+import { validateText } from '../../utils/inputValidation'
 
 type Role = 'student' | 'recruiter'
 
@@ -38,8 +39,18 @@ const Register = ({ asModal = false, onSwitchToLogin }: RegisterProps) => {
 
   const validate = () => {
     const newErrors: typeof errors = {}
-    if (!fullName.trim() || fullName.trim().length < 2) {
-      newErrors.fullName = 'Họ và tên phải có ít nhất 2 ký tự.'
+    const fullNameError = validateText(fullName, {
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+      maxWords: 6,
+      maxWordLength: 20,
+      pattern: /^[A-Za-zÀ-ỹ\s'.-]+$/,
+      emptyMessage: 'Vui lòng nhập họ và tên.',
+      invalidMessage: 'Họ và tên chỉ được chứa chữ cái, khoảng trắng và ký tự hop le.',
+    })
+    if (fullNameError) {
+      newErrors.fullName = fullNameError
     }
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     if (!email.trim()) {

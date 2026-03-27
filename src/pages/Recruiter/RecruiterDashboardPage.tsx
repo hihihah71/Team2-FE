@@ -4,11 +4,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ROUTES } from '../../constants/routes'
 import { getRecruiterDashboardStats } from '../../features/dashboard/dashboardService'
 import { getJobs } from '../../features/jobs/jobsService'
+import { submitRecruiterVerificationRequest } from '../../features/profile/profileService'
 import type { JobItem, RecruiterDashboardStats } from '../../types/domain'
 import { PageHeader } from '../../components/common/PageHeader'
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import { JobCard } from '../../components/job/JobCard'
 import { Pagination } from '../../components/common/Pagination'
+import { useAuth } from '../../contexts/AuthContext'
 import './RecruiterDashboardPage.css'
 import '../PageUI.css'
 
@@ -17,12 +19,18 @@ import '../PageUI.css'
 
 const RecruiterDashboardPage = () => {
   const navigate = useNavigate()
+  const { user, setUser } = useAuth()
   const [stats, setStats] = useState<RecruiterDashboardStats | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recentJobs, setRecentJobs] = useState<JobItem[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
   const [page, setPage] = useState(1)
   const pageSize = 6
+  const [verificationNote, setVerificationNote] = useState('')
+  const [verificationImages, setVerificationImages] = useState('')
+  const [submittingVerification, setSubmittingVerification] = useState(false)
+  const [verificationMessage, setVerificationMessage] = useState('')
+  const [allowResubmit, setAllowResubmit] = useState(false)
 
   useEffect(() => {
     getRecruiterDashboardStats()
@@ -41,9 +49,24 @@ const RecruiterDashboardPage = () => {
       .finally(() => setJobsLoading(false))
   }, [])
 
+  useEffect(() => {
+    if (!user) return
+    setVerificationNote(user.verificationRequestNote || '')
+    setVerificationImages((user.verificationEvidenceImages || []).join(', '))
+  }, [user])
+
   const totalPages = Math.max(1, Math.ceil(recentJobs.length / pageSize))
   const safePage = Math.min(page, totalPages)
   const pagedJobs = recentJobs.slice((safePage - 1) * pageSize, safePage * pageSize)
+
+  const isVerifiedRecruiter = !!user?.isVerifiedRecruiter
+  const hasPendingVerificationRequest =
+    !isVerifiedRecruiter &&
+    !!user?.verificationRequestedAt &&
+    !user?.verificationRejectReason
+  const hasRejectedVerificationRequest =
+    !isVerifiedRecruiter &&
+    !!user?.verificationRejectReason
 
   return (
     <div className="page-ui">
@@ -52,6 +75,98 @@ const RecruiterDashboardPage = () => {
           title="Xin chào, nhà tuyển dụng "
           subtitle="Theo dõi hiệu suất tuyển dụng và xử lý ứng viên nhanh hơn."
         />
+        <section className="page-ui__card" style={{ marginBottom: '16px' }}>
+          <p className="page-ui__muted" style={{ margin: 0 }}>
+            Trạng thái xác minh tài khoản:{' '}
+            <strong style={{ color: user?.isVerifiedRecruiter ? '#86efac' : '#fca5a5' }}>
+              {isVerifiedRecruiter
+                ? 'Đã duyệt'
+                : hasPendingVerificationRequest
+                  ? 'Đang chờ duyệt'
+                  : hasRejectedVerificationRequest
+                    ? 'Đã bị từ chối'
+                    : 'Chưa gửi yêu cầu duyệt'}
+            </strong>
+          </p>
+          {!isVerifiedRecruiter && (
+            <div style={{ marginTop: '12px', display: 'grid', gap: '10px' }}>
+              {hasPendingVerificationRequest && !allowResubmit ? (
+                <p className="page-ui__muted" style={{ margin: 0, color: '#93c5fd' }}>
+                  Bạn đã gửi yêu cầu duyệt vào{' '}
+                  {new Date(user?.verificationRequestedAt || '').toLocaleString('vi-VN')}. Vui lòng chờ admin xét duyệt.
+                </p>
+              ) : null}
+              {!(hasPendingVerificationRequest && !allowResubmit) ? (
+                <>
+                  <textarea
+                    className="page-ui__textarea"
+                    placeholder="Mô tả thông tin doanh nghiệp, giấy phép, bằng chứng xác thực..."
+                    value={verificationNote}
+                    onChange={(e) => setVerificationNote(e.target.value)}
+                    maxLength={1200}
+                  />
+                  <input
+                    className="page-ui__input"
+                    placeholder="Link ảnh minh chứng (cách nhau bằng dấu phẩy)"
+                    value={verificationImages}
+                    onChange={(e) => setVerificationImages(e.target.value)}
+                  />
+                </>
+              ) : null}
+              {user?.verificationRejectReason ? (
+                <p className="page-ui__error" style={{ margin: 0 }}>
+                  Lý do từ chối gần nhất: {user.verificationRejectReason}
+                </p>
+              ) : null}
+              {verificationMessage ? (
+                <p className="page-ui__muted" style={{ margin: 0, color: '#86efac' }}>
+                  {verificationMessage}
+                </p>
+              ) : null}
+              {hasPendingVerificationRequest && !allowResubmit ? (
+                <button
+                  className="page-ui__btn page-ui__btn--secondary"
+                  onClick={() => setAllowResubmit(true)}
+                >
+                  Chỉnh sửa & gửi lại yêu cầu
+                </button>
+              ) : (
+                <button
+                  className="page-ui__btn page-ui__btn--primary"
+                  disabled={submittingVerification}
+                  onClick={async () => {
+                    try {
+                      setSubmittingVerification(true)
+                      setVerificationMessage('')
+                      const evidenceImages = verificationImages
+                        .split(',')
+                        .map((item) => item.trim())
+                        .filter(Boolean)
+                      await submitRecruiterVerificationRequest({ note: verificationNote.trim(), evidenceImages })
+                      setVerificationMessage('Đã gửi yêu cầu duyệt thành công. Vui lòng chờ admin xét duyệt.')
+                      setAllowResubmit(false)
+                      if (user) {
+                        setUser({
+                          ...user,
+                          verificationRequestNote: verificationNote.trim(),
+                          verificationEvidenceImages: evidenceImages,
+                          verificationRequestedAt: new Date().toISOString(),
+                          verificationRejectReason: '',
+                        })
+                      }
+                    } catch (err) {
+                      setVerificationMessage(err instanceof Error ? err.message : 'Không thể gửi yêu cầu duyệt.')
+                    } finally {
+                      setSubmittingVerification(false)
+                    }
+                  }}
+                >
+                  {submittingVerification ? 'Đang gửi...' : 'Gửi yêu cầu duyệt tài khoản'}
+                </button>
+              )}
+            </div>
+          )}
+        </section>
 
         {error && <p className="page-ui__error">{error}</p>}
 

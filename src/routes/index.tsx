@@ -8,6 +8,7 @@ import { ROUTES } from '../constants/routes'
 
 import StudentLayout from '../layouts/StudentLayout'
 import RecruiterLayout from '../layouts/RecruiterLayout'
+import AdminLayout from '../layouts/AdminLayout'
 import { ProtectedRoute } from '../components/auth/ProtectedRoute'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -33,6 +34,15 @@ const RecruiterJobStatsPage = lazy(() => import('../pages/Recruiter/RecruiterJob
 const RecruiterApplicantCVPage = lazy(() => import('../pages/Recruiter/RecruiterApplicantCVPage'))
 const RecruiterBrowseJobsPage = lazy(() => import('../pages/Recruiter/RecruiterBrowseJobsPage'))
 const RecruiterBrowseJobDetailPage = lazy(() => import('../pages/Recruiter/RecruiterBrowseJobDetailPage'))
+
+// Admin
+const AdminLoginPage = lazy(() => import('../pages/Admin/AdminLoginPage'))
+const AdminDashboardPage = lazy(() => import('../pages/Admin/AdminDashboardPage'))
+const AdminUsersPage = lazy(() => import('../pages/Admin/AdminUsersPage'))
+const AdminRecruitersPage = lazy(() => import('../pages/Admin/AdminRecruitersPage'))
+const AdminJobsPage = lazy(() => import('../pages/Admin/AdminJobsPage'))
+const AdminJobDetailPage = lazy(() => import('../pages/Admin/AdminJobDetailPage'))
+const AdminReportsPage = lazy(() => import('../pages/Admin/AdminReportsPage'))
 
 function PageFallback() {
   return (
@@ -64,7 +74,9 @@ function NotFoundRedirect() {
   const to = user
     ? user.role === 'student'
       ? ROUTES.STUDENT_DASHBOARD
-      : ROUTES.RECRUITER_DASHBOARD
+      : user.role === 'recruiter'
+        ? ROUTES.RECRUITER_DASHBOARD
+        : ROUTES.ADMIN_DASHBOARD
     : ROUTES.HOME
   return <Navigate to={to} replace />
 }
@@ -75,6 +87,7 @@ export function AppRoutes() {
       <Routes>
         {/* Common — không qua layout */}
         <Route path={ROUTES.HOME} element={<HomePage />} />
+        <Route path={ROUTES.ADMIN_LOGIN} element={<AdminLoginPage />} />
         <Route path="/public/cv/:slug" element={<PublicCVPage />} />
 
         {/* Student — nested under /student, bảo vệ: chỉ role student */}
@@ -94,6 +107,23 @@ export function AppRoutes() {
           <Route path="cv" element={<StudentCVPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="profile" element={<ProfilePage />} />
+        </Route>
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to={ROUTES.ADMIN_DASHBOARD} replace />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="recruiters" element={<AdminRecruitersPage />} />
+          <Route path="jobs" element={<AdminJobsPage />} />
+          <Route path="jobs/:jobId" element={<AdminJobDetailPage />} />
+          <Route path="reports" element={<AdminReportsPage />} />
         </Route>
 
         {/* Recruiter — nested under /recruiter, bảo vệ: chỉ role recruiter */}

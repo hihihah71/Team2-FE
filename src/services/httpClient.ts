@@ -1,11 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+import { validatePayloadTextFields } from '../utils/inputValidation'
 
 type ApiErrorShape = {
   message?: string
-}
-
-function getToken() {
-  return localStorage.getItem("access_token")
 }
 
 function getHeaders(isFormData: boolean = false) {
@@ -49,6 +46,8 @@ export function apiGet<T>(path: string) {
 }
 
 export function apiPost<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   const isFormData = body instanceof FormData;
   return fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
     method: "POST",
@@ -58,6 +57,8 @@ export function apiPost<T>(path: string, body: any) {
 }
 
 export function apiPut<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "PUT",
     body: JSON.stringify(body)
@@ -65,6 +66,8 @@ export function apiPut<T>(path: string, body: any) {
 }
 
 export function apiPatch<T>(path: string, body: any) {
+  const validationError = validatePayloadTextFields(body)
+  if (validationError) throw new Error(validationError)
   return request<T>(path, {
     method: "PATCH",
     body: JSON.stringify(body)
@@ -75,5 +78,9 @@ export function apiDelete<T>(path: string) {
   return request<T>(path, {
     method: "DELETE"
   })
+}
+
+export function sendForgotPasswordEmail(email: string) {
+  return apiPost<{ message: string }>('/auth/forgot-password', { email })
 }
 

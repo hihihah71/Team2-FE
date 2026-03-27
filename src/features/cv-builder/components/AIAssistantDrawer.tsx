@@ -3,6 +3,7 @@ import { useCVStore } from '../store/cvStore'
 import { X, Sparkles, Send, RefreshCw, Languages, Zap, FileText, AlertTriangle, Target } from 'lucide-react'
 import { apiPost } from '../../../services/httpClient'
 import { API_ENDPOINTS } from '../../../constants/api'
+import { validateText } from '../../../utils/inputValidation'
 
 export const AIAssistantDrawer: React.FC = () => {
   const { aiDrawer, closeAiDrawer, updateField, updateCustomSection, profile } = useCVStore()
@@ -45,6 +46,15 @@ export const AIAssistantDrawer: React.FC = () => {
     const textToSend = aiDrawer.currentText
     if (!textToSend || textToSend.trim().length < 3) {
       setError('Hãy click vào một đoạn văn bản trên CV để bắt đầu.')
+      return
+    }
+    const textError = validateText(textToSend, { maxWords: 300, maxWordLength: 20 })
+    if (textError) {
+      setError(`Noi dung CV: ${textError}`)
+      return
+    }
+    if (type && type.trim().length > 20) {
+      setError('Yeu cau toi uu khong hop le.')
       return
     }
 
@@ -99,6 +109,11 @@ export const AIAssistantDrawer: React.FC = () => {
 
   const handlePractice = async () => {
     if (!userAnswer.trim()) return
+    const answerError = validateText(userAnswer, { maxWords: 300, maxWordLength: 20 })
+    if (answerError) {
+      setError(`Cau tra loi: ${answerError}`)
+      return
+    }
     setIsLoading(true)
     setEvaluation(null)
     try {
@@ -117,6 +132,11 @@ export const AIAssistantDrawer: React.FC = () => {
   const handleTailor = async () => {
     if (!jdText.trim()) {
       setError('Hãy dán JD vào để tôi phân tích.')
+      return
+    }
+    const jdError = validateText(jdText, { maxWords: 400, maxWordLength: 20 })
+    if (jdError) {
+      setError(`JD: ${jdError}`)
       return
     }
     setIsLoading(true)
@@ -145,6 +165,11 @@ export const AIAssistantDrawer: React.FC = () => {
   const handleInterviewPrep = async () => {
     if (!jdText.trim()) {
       setError('Dán JD vào để tôi dự đoán câu hỏi phỏng vấn.')
+      return
+    }
+    const jdError = validateText(jdText, { maxWords: 400, maxWordLength: 20 })
+    if (jdError) {
+      setError(`JD: ${jdError}`)
       return
     }
     setIsLoading(true)

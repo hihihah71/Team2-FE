@@ -58,6 +58,11 @@ const RecruiterJobDetailPage = () => {
       {error && (
         <p className="page-ui__error">{error}</p>
       )}
+      {job?.moderationStatus === 'rejected' && (
+        <p className="page-ui__error">
+          Bài đăng này đã bị admin ban và đã được đóng.
+        </p>
+      )}
       <section className="page-ui__card">
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px', marginBottom: '14px' }}>
           <input

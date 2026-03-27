@@ -76,7 +76,7 @@ const RecruiterBrowseJobsPage = () => {
     return () => clearTimeout(timer)
   }, [search])
 
-  const { jobs, loading, error, total } = useJobs({ 
+  const { jobs, loading, total } = useJobs({ 
     search: debouncedSearch, 
     page, 
     limit: pageSize, 
