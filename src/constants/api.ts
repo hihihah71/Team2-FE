@@ -47,7 +47,7 @@ export const API_ENDPOINTS = {
   // Profile (student & recruiter)
   PROFILE_ME: '/profile/me',
   PROFILE_SAVE: '/profile/me',
-  PROFILE_RECRUITER_VERIFICATION_REQUEST: '/profile/recruiter-verification-request',
+  PROFILE_RECRUITER_VERIFICATION_REQUEST: '/profile/verify-recruiter',
 
   // Saved jobs
   SAVED_JOBS_ME: '/saved-jobs/me',

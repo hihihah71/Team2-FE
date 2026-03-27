@@ -16,6 +16,7 @@ export type User = {
   verificationRequestedAt?: string | null
   verificationRejectReason?: string
   isBanned?: boolean
+  skills?: string[]
 }
 
 type AuthContextValue = {

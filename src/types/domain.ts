@@ -98,6 +98,8 @@ export type ApplicationsMeResponse = {
 export interface StudentDashboardStats {
   totalApplications: number;
   shortlisted: number;
+  applicationsTrend: { month: string; count: number }[]; 
+  marketTrend: { month: string; newJobs: number; applicants: number }[];
   savedJobs: number;
   interviews: number; // Đã thêm dòng này để hiện số ở thẻ KPI
   defaultCvName: string | null;
